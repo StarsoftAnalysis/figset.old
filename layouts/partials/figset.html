@@ -1,0 +1,276 @@
+{{/*
+  figset partial, version of figure with srcsetting.
+
+  This is figset -- copied from figset 27/4/20, for use with hacked lightbox2:
+   - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
+
+  TODO:
+  * apply defaults here, NOT in figset shortcode
+  * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
+  * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
+
+  This can be used from another template, with args passed in as a dict, e.g.
+    {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
+  or via the corresponding shortcode:
+    {{< figset name="fred.png" size="medium" >}}
+
+  The figset shortcode gets all options from a figrow parent (if any).
+
+  args (in the dict/context):
+    page -- current page
+    name (of image within the page bundle)
+    position - left, right, centre...
+    size - thumb, small, medium, large, full  TODO other sizes  FIXME hook into bootstrap sizing
+    maxwidth -- biggest size used for srcset in pixels
+    size2 - like size, but presumably bigger -- to expand image
+    title
+    caption
+    alt
+    url -- url to link to -- on second click if galleried...
+    gallery - name of gallery -- just has to be the same on a group of figures to make them a gallery - implies lightbox
+    lightbox - anything truthy to add lightbox effect without making it a gallery
+    image (resource) or name (name of image file in bundle) -- image overrides name
+    height -- ?units -- maybe need responsive values.  Overrides size, for use (e.g. from figrow) to make a row of images line up.
+        -- allow: px  em  % .... ...  remember at this stage we have no idea of screen size or shape
+            -- if %, can calculate width as % (of container) and then estimate sizes as vw -- or maybe just specify sizes as vh
+            -- if px, calculate width as px, then need to do media things for sizes, copying transitions from those used for bootstrap
+            -- if em, depends on font size, so maybe don't handle that.  Or assume 16px
+
+      TODO -- size2 to limit size of expanded image, e.g. if not in a gallery
+
+*/}}
+{{/* <p>This is figset.html (partial) - context is {{- . }}</p> */}}
+{{/* Image can be specified as .image or .name -- .image takes precedence */}}
+{{- $name := .name | default "" -}}
+{{- $image := "" -}}
+{{- if isset . "image" -}}
+  {{- $image = .image -}}
+{{- else -}}
+  {{- $image = .page.Resources.GetMatch $name -}}
+{{- end -}}
+{{/* warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image */}}
+{{- if $image -}}
+  {{- $origwidth := $image.Width -}}
+  {{- $origheight := $image.Height -}}
+  {{- $aspect := div (float $origwidth) (float $origheight) -}}
+  {{- $maxwidth := (int (.maxwidth | default 2000)) -}}
+  {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
+  {{/* Just a big list, in descending order (so that default size is first, and so that JS can handle the list easily) */}} 
+  {{- $allwidths := slice 1800 1600 1400 1200 1000 800 600 400 200 -}}
+  <!-- <p>aspect={{ $aspect }}, allwidths={{ $allwidths }}</p> -->
+  {{- $caption := .caption | default "" -}}
+  {{- $title := .title | default "" }}{{/* NOT page title   $image.Title is the file name; so is $image.Name */}}
+  {{- $url := .url | default $image.Params.Url | default "" -}}
+  {{- $alt := .alt | default $title -}}
+  {{/* warnf "fs: origw,h=%d,%d aspect=%.2f maxwidth=%d\n" $origwidth $origheight $aspect $maxwidth */}}
+
+  {{- $height := 0 -}}
+  {{- $heightunit := "" -}}
+  {{- $widthunit := "" -}}
+  {{- $imagelist := slice -}}{{/* empty slice */}}
+  {{- $imagewidth := 0 -}}
+  {{- $imagewidthstring := "" -}}
+  {{- $imagemargincss := "" -}}
+  {{- $posclass := "" -}}
+  {{- $sizes := "" -}}
+  
+  {{ $sizeString := "" }}
+
+  {{/* height overrides size */}}
+  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes; images don't align if some captions are multiline and some aren't */}}
+  {{- if .height -}}
+
+    {{/* depends on units */}}
+    {{- if strings.HasSuffix .height "px" -}}
+      {{- warnf "px height is %v\n" .height -}}
+      {{- $height = int (strings.TrimSuffix "px" .height) -}}
+      {{- $heightunit = "px" -}}
+      {{- $imagewidth = (mul $height $aspect) -}}
+      {{- $widthunit = "px" -}}
+      {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
+
+      {{- if gt $height $origheight -}}
+        {{/* don't want to expand image, so give it a margin */}}
+        {{- $imagemargincss = printf "margin: %fpx %fpx; border: 1px solid red;" (div (sub $height $origheight) 2.0) (div (sub $imagewidth $origwidth) 2.0) -}}
+        {{/* only need the exact size... */}}
+        {{- $imagelist = $imagelist | append $image -}}
+      {{- else -}}
+        {{/* resize to the exact size required */}}
+        {{/* See [image] section of config.toml for image processing options */}}
+        {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $height))) -}}
+      {{- end -}}
+    {{- else -}}
+      <p>Mystery height is '{{ .height }}'.
+    {{- end -}}
+    {{/* warnf "fs(h): height=%v hunit=%s imagewidth=%v wunit=%s imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $height $heightunit $imagewidth $widthunit $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
+
+  {{- else -}}{{/* starting with size/width, so more complicated... */}}
+
+    {{/* 
+      Image sizes are : thumb  small  medium  large  full
+      Based on a 'typical' 1.4:1 image, these fit across screen sizes 
+      as defnied in the $idealWXxx slices below (in vw aka % units)
+      (bearing in mind that the available width is not the whole screen width)
+      
+      The area A of each ideal image in term of aspect ratio (w/h) R is width*height or width-squared/R
+
+      Each real image, with aspect ratio R', should have the same area, so its height is sqrt(A/R')
+      and its width is its height*R'
+
+    */}}
+    {{/*       screen width:  1200+ 992+ 768+ 576+ else */}}
+    {{ $idealWThumb  := slice   10   12   15   25   45 }}
+    {{ $idealWSmall  := slice   25   25   30   45  100 }}
+    {{ $idealWMedium := slice   33   40   50   80  100 }}
+    {{ $idealWLarge  := slice   50   60   80  100  100 }}
+    {{ $idealWFull   := slice  100  100  100  100  100 }}
+
+    {{- $size := .size | default "medium" -}}
+    {{ $idealW := $idealWMedium }}{{/* used if none of the strings match */}}
+    {{ if (eq $size "thumb") }}
+      {{ $idealW = $idealWThumb }}
+    {{ else if (eq $size "small") }}
+      {{ $idealW = $idealWSmall }}
+    {{ else if (eq $size "medium") }}
+      {{ $idealW = $idealWMedium }}
+    {{ else if (eq $size "large") }}
+      {{ $idealW = $idealWLarge }}
+    {{ else if (eq $size "full") }}
+      {{ $idealW = $idealWFull }}
+    {{ end }}
+    {{/* warnf ">>> $size='%s'  equaltothumb = %v\n" $size (eq $size "thumb") */}}
+
+    {{/* now only one set of calcs required */}}
+    {{ $idealAspect  := 1.4 }}
+    {{ $areas := slice }}
+    {{ $widths := slice }}
+    {{ range $w := $idealW }}
+      {{ $areas = $areas | append (int (math.Round (div (mul $w $w) $idealAspect))) }}
+      {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
+      {{ $y := math.Sqrt (div $area $aspect) }}
+      {{/* warnf "fs:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) */}}
+      {{ $widths = $widths | append (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
+    {{ end }}
+    {{/* warnf "fs:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths */}}
+
+    {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
+    {{/* warnf "sizeString=%s\n" $sizeString */}} 
+
+
+    {{/* TODO could do this the bootstrap way e.g. d-flex */}}
+    {{/* TODO tell user not to use left or right within a row -- we really want things centered */}}
+    {{- $pos := .position | default "left" -}}
+    {{- if eq $pos "left" -}}
+      {{/* need e.g. text-right for figure, float-right for img NO! */}}
+      {{- $posclass = "float-startmr-3" -}}
+    {{- else if eq $pos "right" -}}
+      {{- $posclass = "float-end ml-3" -}}
+    {{- else if or (eq $pos "centre") (eq $pos "center") -}}
+      {{/* need text-center for figure, "mx-auto d-block" img */}}
+      {{- $posclass = "xxmx-auto xxd-block" -}}
+    {{- else -}}
+      {{- $posclass = "" -}}
+    {{- end -}}
+
+    <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
+    {{- range $w := $allwidths -}}
+      {{- if le $w $maxwidth -}}
+        {{- $imagelist = $imagelist | append ($image.Resize (printf "%dx jpg" $w)) -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if eq (len $imagelist) 0 -}}
+      {{- $imagelist = $imagelist | append $image -}}
+    {{- end -}}
+
+  {{- end -}}{{/* else, not .height */}}
+
+  {{/* warnf "fs: title=%s h=%v iw=%v aspect=%.2f iw/aspect=%.2f area=%v imcss=%s\n" $title .height (int $imagewidth) $aspect (div $imagewidth $aspect) (int (mul $imagewidth (div $imagewidth $aspect))) $imagemargincss */}}
+  
+  {{- $defaultimage := index $imagelist 0 -}}{{/* Just use the first, i.e. largest */}}
+
+  {{- $lightboxstring := "" -}}
+  {{- if .gallery -}}
+    {{- $lightboxstring = printf "data-lightbox='%s'" .gallery -}}
+  {{- else if .lightbox -}}
+    {{/* FIXME passing RelPermalink as the gallery name seems a bit weird, but how else to make it unique? */}}
+    {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
+  {{- end -}}
+  {{/* warnf "fs: lbstring=%s  gallery=%s\n" $lightboxstring .gallery */}}
+
+  {{/* height, if any, is set via figrow shortcode (parent) */}}
+  {{/* figure needs to be same width as img, otherwise it's too wide to allow any text flow */}}
+  {{- $figcss := "" -}}{{/* CSS for figure, or its enclosing 'a' FIXME rename it */}}
+  {{- $figclass := "" -}}{{/* classes for figure, or its enclosing 'a' FIXME rename it */}}
+  {{- $imgcss := "" -}}
+  {{- if .height -}}
+    {{/* $figcss = (printf "width: %q;" $imagewidthstring) */}}{{/* FIXME but if .height specified, we're not using $imagewidth -- need to use ... */}}
+    {{/* FIXME probably not needed because it's already the exact size we want  $imgcss = (printf "height: %s;" .height) */}}
+  {{- else -}}
+    {{- $figcss = (printf "flex: 0 0 auto; align-items: center; %s" $imagewidthstring) -}}
+    {{- $figclass = "mx-2" -}}
+  {{- end -}}
+  {{/* warnf "fs figcss=%s  figclass=%s  imgcss=%s  \n" $figcss $figclass $imgcss */}}
+
+  {{- $link := true -}}
+  {{- $dataurlstring := "" -}}
+  {{- if $lightboxstring -}}
+    {{/* warnf "lbs is not empty..." */}}
+    {{/* TODO maybe -- let the JS extract the image url/name from the fig */}}
+    {{- $lightboxstring = printf "%s data-image='%s'" $lightboxstring $defaultimage.RelPermalink -}}
+
+    {{/* warnf "adding to lbs: url=%s alt=%s title=%s" $url $alt $title */}}
+    {{- with $url -}}{{- $lightboxstring = printf "%s data-url='%s'" $lightboxstring . -}}{{- end -}}
+    {{- with $alt -}}{{- $lightboxstring = printf "%s data-alt='%s'" $lightboxstring . -}}{{- end -}}
+    {{/* use caption as default title just for the lightbox */}}
+    {{- with ($title | default $caption) }}{{ $lightboxstring = printf "%s data-title='%s'" $lightboxstring . }}{{ end -}}
+
+    {{/* Create srcset entries as a dict */}}
+    {{- $srcset := slice -}}
+    {{- range $i := $imagelist -}}
+      {{- $srcset = $srcset | append (dict "url" $i.RelPermalink "width" $i.Width "height" $i.Height) -}}
+    {{- end -}}
+
+    {{/* Use default image for href in case the clever JS doesn't work */}}
+    {{/* NOTE either data-remote or href gets used for the image to display */}}
+    {{- $figcss = "" -}}
+    {{- $figclass = "" -}}
+  {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
+    {{/* warnf "simple link" */}}
+    <a href="{{ $url }}" class="{{ $figclass }}" style="display: block; {{ $figcss | safeCSS }}">
+    {{- $figcss = "" -}}
+    {{- $figclass = "" -}}
+  {{- else -}}
+    {{/* warnf "no link" */}}
+    {{- $link = false -}}
+  {{- end -}}
+
+  {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
+  <figure class="figure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  <img loading=lazy class="img-fluid xxmx-2 border border-primary"
+    {{/* Only include srcset if there is more than one */}}
+    {{- if gt (len $imagelist) 1 -}}
+      srcset="
+      {{- range $i := $imagelist -}}
+        {{- $i.RelPermalink }} {{ printf "%dw" $i.Width -}},
+      {{- end -}}
+      "
+    {{- end -}}
+    {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end -}}
+    src="{{ $defaultimage.RelPermalink }}" 
+    {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"  { { /* see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
+    {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}
+    {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
+    style="{{ $imgcss | safeCSS }} {{ $imagemargincss | safeCSS }}" {{/* 100% of figure                   .already done with img-fluid: max-width: 100%; height: auto; */}}
+    {{/* object-fit: contain; ??? */}}
+  >
+  {{- if $caption -}}
+    <figcaption class=figure-caption>{{ $caption | safeHTMLAttr }}</figcaption>
+  {{- end -}}
+  </figure>
+  {{- if $link -}}
+    </a>
+  {{- end -}}
+
+{{- else -}}
+[image '{{ $name }}' not found]
+{{- end -}}

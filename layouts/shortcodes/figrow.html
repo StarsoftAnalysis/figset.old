@@ -1,0 +1,20 @@
+{{/* figrow.html -- shortcode for grouping figsets into a row 
+  height - in CSS units, if any.  Doesn't work well with captions  TODO
+  gallery - name of a gallery -- unique on the page.  If omitted, there'll be no gallery effect
+  - both are used in the contained figset shortcode, not here.
+  NOTE Other figset options can be set for figrow and will be used in figset
+*/}}
+
+TODO use the partial
+
+{{ $jc := .Get "justify" | default "space-around" }}
+{{ $align := .Get "align" | default "flex-start" }}
+
+{{ if .Inner }}
+  {{/* TODO could do this the bootstrap way e.g. d-flex */}}
+  <div class=figrow style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $jc }}; align-items: {{ $align }}; ">
+  {{ .Inner }}
+  </div>
+  <div clear=both></div>
+{{ end }}
+

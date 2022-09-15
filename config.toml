@@ -1,0 +1,130 @@
+# Leave baseURL empty for relative urls?
+# see https://gohugo.io/content-management/urls/
+# Proper value is added in serve/deploy script
+baseURL = ""
+#? relativeURLs = true
+#? uglyURLs = true
+canonifyURLs = false
+
+title = "Avon Valley Shed"
+
+# Note SEO-type additions from https://www.skcript.com/svr/perfect-seo-meta-tags-with-hugo/
+enableEmoji = false
+enableGitInfo = false
+enableRobotsTXT = true
+languageCode = "en-GB"
+DefaultContentLanguage = "en"
+
+paginate = 9
+
+# See https://github.com/gohugoio/hugo/issues/6859
+##disableKinds = ['taxonomyTerm']
+
+# See https://github.com/gohugoio/hugo/issues/4841
+timeout = "5m"
+
+  # see https://gohugo.io/functions/where/#mainsections
+  #mainSections = ["plots"]
+  #
+
+summaryLength = 70
+summaryExclusions = ["figcaption", "input"]	# , "h4", "h6", "h3"]
+
+
+#[module]
+#[[module.imports]]
+  # Not yet...
+  #path = 'github.com/starsoftanalysis/hugo-responsive-images-ssa'
+  #path = 'github.com/danielfdickinson/hugo-debug-tables'
+
+[params]
+  title = "Avon Valley Shed"
+  #sitename = "Avon Valley Shed"
+  subtitle = "A place to create"
+  description = "The Avon Valley Shed, a creative space based in Fordingbridge, Hampshire"
+  bannerBackground = '/images/avs-bridge-header.jpg'
+  favicon = '/images/avs-logo-64.png'
+  siteimage = "/images/avs-logo-large-tr.png"
+  siteimagealt = "logo"
+  sitecolour = "#e1d3b8"
+  author = "Avon Valley Shed"
+  #facebook = "https://www.facebook.com/Avon-Valley-Shed-111245716984243/"
+  facebookUrl = "https://www.facebook.com/avonvalleyshed2020/"
+  facebookId = "avonvalleyshed"  # excluding the @
+  #twitter = "AvonValleyShed"	# excluding the leading @   not used yet.
+  email = "enquiries@avonvalleyshed.org.uk"
+  #email = "avonvalleyshed@gmail.com"
+  charitynum = "1191440"
+  copyright = "Copyright 2019-2021 Avon Valley Shed"
+  contactphone = "07428&nbsp;590090"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      definitionList = true
+      footnote = true
+      linkify = true
+      strikethrough = true
+      table = true
+      taskList = true
+      typographer = true
+    [markup.goldmark.parser]
+      attribute = true
+      autoHeadingID = true
+      #? autoHeadingIDType = "github"
+    [markup.goldmark.renderer]
+      hardWraps = false
+      unsafe = true     # temp
+      xHTML = false
+
+[imaging]
+  # Default resample filter used for resizing. Default is Box,
+  # a simple and fast averaging filter appropriate for downscaling.
+  # See https://github.com/disintegration/imaging
+  # box | Lanczos | ...
+  resampleFilter = "Lanczos"
+  format = "jpg"
+  # Default JPEG quality setting. Default is 75.
+  quality = 90
+  # Anchor used when cropping pictures.
+  # Default is "smart" which does Smart Cropping, using https://github.com/muesli/smartcrop
+  # Smart Cropping is content aware and tries to find the best crop for each image.
+  # Valid values are Smart, Center, TopLeft, Top, TopRight, Left, Right, BottomLeft, Bottom, BottomRight
+  #anchor = "smart"
+  # Default background color. 
+  # Hugo will preserve transparency for target formats that support it,
+  # but will fall back to this color for JPEG.
+  # Expects a standard HEX color string with 3 or 6 digits.
+  #bgColor = "#ffffff"
+  [imaging.exif]
+    # Regexp matching the fields you want to Exclude from the (massive) set of Exif info
+    # available. As we cache this info to disk, this is for performance and
+    # disk space reasons more than anything.
+    # If you want it all, put ".*" in this config setting.
+    # Note that if neither this or ExcludeFields is set, Hugo will return a small
+    # default set.
+    includeFields = ""
+    # Regexp matching the Exif fields you want to exclude. This may be easier to use
+    # than IncludeFields above, depending on what you want.
+    excludeFields = ".*"
+    # Hugo extracts the "photo taken" date/time into .Date by default.
+    # Set this to true to turn it off.
+    disableDate = true
+    # Hugo extracts the "photo taken where" (GPS latitude and longitude) into
+    # .Long and .Lat. Set this to true to turn it off.
+    disableLatLong = true
+
+# See https://gohugo.io/getting-started/configuration/#configure-server
+[server]
+  [[server.headers]]
+    for = "/**.html"
+    [server.headers.values]
+      #Content-Security-Policy = "script-src localhost:1313"
+      #Referrer-Policy = "strict-origin-when-cross-origin"
+      #Access-Control-Allow-Origin = "*"
+      #"https://test.plottingshed.art"
+      #Vary = "Origin"
+      #X-Content-Type-Options = "nosniff"
+      #X-Frame-Options = "DENY"
+      #X-XSS-Protection = "1; mode=block"
+

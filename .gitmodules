@@ -1,0 +1,6 @@
+[submodule "assets/lib/lightboxssa"]
+	path = assets/lib/lightboxssa
+	url = https://github.com/StarsoftAnalysis/lightboxSSA.git
+[submodule "assets/lib/bootstrap"]
+	path = assets/lib/bootstrap
+	url = https://github.com/twbs/bootstrap.git
