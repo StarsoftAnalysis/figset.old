@@ -20,7 +20,8 @@
 
 */}}
 
-{{/* Set $p to the parent (if any), or else this context */}}
+{{/* Set $p to the parent (if any -- could be the figrow), or else this context */}}
+{{/* FIXME is it safe to take args from parent that isn't a figrow? */}}
 {{ $p := .Parent | default . }}
 {{ $name     := .Get "name"     | default ($p.Get "name")     }}
 {{ $position := .Get "position" | default ($p.Get "position") }}

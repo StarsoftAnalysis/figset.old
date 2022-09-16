@@ -5,16 +5,14 @@
   NOTE Other figset options can be set for figrow and will be used in figset
 */}}
 
-TODO use the partial
 
-{{ $jc := .Get "justify" | default "space-around" }}
-{{ $align := .Get "align" | default "flex-start" }}
+{{/* Get parameters and apply defaults */}}
+{{ $gallery := .Get "gallery" | default "" }}
+{{ $height  := .Get "height"  | default "" }}
+{{ $justify := .Get "justify" | default "space-around" }}
+{{ $valign  := .Get "valign"  | default "flex-start" }}
 
-{{ if .Inner }}
-  {{/* TODO could do this the bootstrap way e.g. d-flex */}}
-  <div class=figrow style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $jc }}; align-items: {{ $align }}; ">
-  {{ .Inner }}
-  </div>
-  <div clear=both></div>
-{{ end }}
+{{ partial "figrow_start.html" (dict  "page" .Page  "gallery" $gallery  "height" $height  "justify" $justify  "valign" $valign  ) }}
+  {{ with .Inner }}{{ . }}{{ end }}
+{{ partial "figrow_end.html"   (dict  "page" .Page ) }}
 

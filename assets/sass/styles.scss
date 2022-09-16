@@ -5,7 +5,7 @@
 // and custom_variables.scss here too
 body {
   /* font-size: $font-size-lg * 1.0; */
-  font-family: Infini;  // See @font-face in main.scss
+  //font-family: Infini;  // See @font-face in main.scss
 }
 
 *, *::before, *::after {
@@ -79,7 +79,7 @@ blockquote {
 
 // Use Stardos Stencil font for main headings and submit buttons
 h1, h2, nav a, input[type=submit] {
-	font-family: stardos_stencil, sans-serif;
+//	font-family: stardos_stencil, sans-serif;
 }
 
 footer .row {
