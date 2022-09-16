@@ -20,21 +20,29 @@
 
 */}}
 
-{{/* Set $p to the parent (if any -- could be the figrow), or else this context */}}
-{{/* FIXME is it safe to take args from parent that isn't a figrow? */}}
-{{ $p := .Parent | default . }}
+{{/* Get parameters, either from the enclosing figrow, or from this figset shortcode. */}}
+{{/* (Default values will be applied in the partial) */}}
+{{/* Set $p to the parent (if it's a figrow), or else this context */}}
+{{ $p := . }}
+{{ $figrow := false }}
+{{ if .Parent }}
+  {{ if eq .Parent.Name "figrow" }}
+    {{ $p = .Parent }}
+    {{ $figrow = true }}
+  {{ end }}
+{{ end }}
 {{ $name     := .Get "name"     | default ($p.Get "name")     }}
 {{ $position := .Get "position" | default ($p.Get "position") }}
 {{ $size     := .Get "size"     | default ($p.Get "size")     }}
 {{ $height   := .Get "height"   | default ($p.Get "height")   }}
 {{ $maxwidth := .Get "maxwidth" | default ($p.Get "maxwidth") }}
 {{ $size2    := .Get "size2"    | default ($p.Get "size2")    }}
-{{ $title    := .Get "title"    | default ($p.Get "xtitle")   }}
+{{ $title    := .Get "title"    | default ($p.Get "title")    }}
 {{ $caption  := .Get "caption"  | default ($p.Get "caption")  }}
 {{ $alt      := .Get "alt"      | default ($p.Get "alt")      }}
 {{ $url      := .Get "url"      | default ($p.Get "url")      }}
 {{ $gallery  := .Get "gallery"  | default ($p.Get "gallery")  }}
 {{ $lightbox := .Get "lightbox" | default ($p.Get "lightbox") }}
 
-{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "size2" $size2  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox) }}
+{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "size2" $size2  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "figrow" $figrow ) }}
 

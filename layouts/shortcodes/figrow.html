@@ -1,18 +1,30 @@
 {{/* figrow.html -- shortcode for grouping figsets into a row 
-  height - in CSS units, if any.  Doesn't work well with captions  TODO
-  gallery - name of a gallery -- unique on the page.  If omitted, there'll be no gallery effect
-  - both are used in the contained figset shortcode, not here.
+
+  Parameters: -- see partials/figrow_start.html
+    * height - in CSS units, if any.  Doesn't work well with captions  TODO
+    * gallery - name of a gallery.  If omitted, there'll be no gallery effect.
+               - all images with the same gallery name will show in the same lightbox carousel
+    * justify - left/start right/end center/centre space-around space-evenly space-between (uses flex's justify-content)
+    * valign - top center/centre bottom (uses flex's align-items)
+    * clear - if true, adds a clear=both after the figrow.
   NOTE Other figset options can be set for figrow and will be used in figset
+  e.g. {{< figrow size=large >}}{{ figset name="x.png" }}{{ figset name="y.jpg" size=small }}...
+  sets size for x.png to large without any work here.  For y.jpg, small will override the setting in figrow.
+  These are obtained in partials/figset.html via e.g. {{ .Parent.Get "size" }}
+
 */}}
 
-
 {{/* Get parameters and apply defaults */}}
-{{ $gallery := .Get "gallery" | default "" }}
-{{ $height  := .Get "height"  | default "" }}
-{{ $justify := .Get "justify" | default "space-around" }}
-{{ $valign  := .Get "valign"  | default "flex-start" }}
+{{/* not needed if no default to supply.   or should the partial do the defaults?  Yes.  */}} 
+{{ $gallery := .Get "gallery" }}
+{{ $height  := .Get "height"  }}
+{{ $justify := .Get "justify" }}
+{{ $valign  := .Get "valign"  }}
+{{ $clear   := .Get "clear"   }}
 
-{{ partial "figrow_start.html" (dict  "page" .Page  "gallery" $gallery  "height" $height  "justify" $justify  "valign" $valign  ) }}
+{{/* We DON'T need to deal with parameters used by figset via its .Parent -- the shortcode mechanism handles that automatically. */}}
+
+{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "gallery" $gallery  "height" $height  "justify" $justify  "valign" $valign  ) }}
   {{ with .Inner }}{{ . }}{{ end }}
-{{ partial "figrow_end.html"   (dict  "page" .Page ) }}
+{{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear ) }}
 
