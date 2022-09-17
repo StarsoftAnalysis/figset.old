@@ -7,14 +7,14 @@
   TODO:
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-  * use flex-grow and -shrink ??
   * or flex-basis -- could do a percentage if we knew how may are in the row (can the parent tell us?)
-  * margin:0 for figures -- check that this is OK in all cases.
+  * margin:0 for figures -- check that this is OK in all cases. - maybe only in figrow
   * get rid of bootstrap or use it properly
   * decouple from lightboxSSA to allow use of other lightboxes??
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
+  * use flex-grow and -shrink ??  NO -- see https://codepen.io/starsoftanalysis/pen/Rwyppdv
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -75,7 +75,7 @@
 {{- $alt := .alt | default $title -}}
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
-{{- $height := .height | default "" -}}
+{{- $height := .height | default "" -}}{{/* string may have units e.g. 100px */}}
 
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
@@ -84,10 +84,11 @@
   {{ $height = "" }}
 {{ end }}
 
-{{ $caption = printf "figrow=%t" $figrow }}
+{{/* TEMP diagnostics: */}}
+{{ $caption = printf "i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow }}
 
 {{/* warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image */}}
-{{/* There should always be an image (see placeholder above) so just return if not */
+{{/* There should always be an image (see placeholder above) so just return if not */}}
 
 {{- if $image -}}
   {{- $origwidth := $image.Width -}}
@@ -99,7 +100,7 @@
   <!-- <p>aspect={{ $aspect }}, allwidths={{ $allwidths }}</p> -->
   {{/* warnf "fs: origw,h=%d,%d aspect=%.2f maxwidth=%d\n" $origwidth $origheight $aspect $maxwidth */}}
 
-  {{- $height := 0 -}}
+  {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
   {{- $widthunit := "" -}}
   {{- $imagelist := slice -}}{{/* empty slice */}}
@@ -113,31 +114,31 @@
 
   {{/* height overrides size */}}
   {{/* height-limited row needs a lot of work -- e.g. non-px suffixes; images don't align if some captions are multiline and some aren't */}}
-  {{- if .height -}}
+  {{- if $height -}}
 
     {{/* depends on units */}}
-    {{- if strings.HasSuffix .height "px" -}}
+    {{- if strings.HasSuffix $height "px" -}}
       {{- warnf "px height is %v\n" .height -}}
-      {{- $height = int (strings.TrimSuffix "px" .height) -}}
+      {{- $heightval = int (strings.TrimSuffix "px" .height) -}}
       {{- $heightunit = "px" -}}
-      {{- $imagewidth = (mul $height $aspect) -}}
+      {{- $imagewidth = (mul $heightval $aspect) -}}
       {{- $widthunit = "px" -}}
       {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
 
-      {{- if gt $height $origheight -}}
+      {{- if gt $heightval $origheight -}}
         {{/* don't want to expand image, so give it a margin */}}
-        {{- $imagemargincss = printf "margin: %fpx %fpx; border: 1px solid red;" (div (sub $height $origheight) 2.0) (div (sub $imagewidth $origwidth) 2.0) -}}
+        {{- $imagemargincss = printf "margin: %fpx %fpx; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) (div (sub $imagewidth $origwidth) 2.0) -}}
         {{/* only need the exact size... */}}
         {{- $imagelist = $imagelist | append $image -}}
       {{- else -}}
         {{/* resize to the exact size required */}}
         {{/* See [image] section of config.toml for image processing options */}}
-        {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $height))) -}}
+        {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
       {{- end -}}
     {{- else -}}
       <p>Mystery height is '{{ .height }}'.
     {{- end -}}
-    {{/* warnf "fs(h): height=%v hunit=%s imagewidth=%v wunit=%s imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $height $heightunit $imagewidth $widthunit $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
+    {{/* warnf "fs(h): heightval=%v hunit=%s imagewidth=%v wunit=%s imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $widthunit $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
 
   {{- else -}}{{/* starting with size/width, so more complicated... */}}
 
