@@ -9,8 +9,8 @@
 
 <p>Figrow partial:
 {{ partial "figrow_start.html" (dict  "page" .Page ) }}{{/* "gallery" $gallery  "height" $height  "justify" $justify  "valign" $valign  ) */}}
-  {{ partial "figset.html" (dict "page" .Page   "name" "figrowimage1.png"  "position" "left"  "size" "small"  "caption" "Look at that" ) }}
-  {{ partial "figset.html" (dict "page" .Page   "name" "figrowimage2.png"  "position" "left"  "size" "small"  "caption" "Look at that" ) }}
+  {{ partial "figset.html" (dict "page" .Page   "name" "figrowimage1.png"  "position" "Left"  "size" "small"  "caption" "Look at that" ) }}
+  {{ partial "figset.html" (dict "page" .Page   "name" "figrowimage2.png"  "position" "leFt"  "size" "small"  "caption" "Look at that" ) }}
 {{ partial "figrow_end.html"   (dict  "page" .Page ) }}
 
 <p>Content:  {{ .Content }}

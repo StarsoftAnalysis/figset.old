@@ -65,9 +65,9 @@
 {{ warnf "figset: $name=%s  .image=%v  $image is %v" $name .image $image }}
 
 {{/* carry on with parameters and defaults */}}
-{{- $position := .position | default "left" -}}
-{{- $size := .size | default "medium" -}}
-{{- $size2 := .size2 | default "full" -}}
+{{- $position := lower .position | default "left" -}}
+{{- $size := lower .size | default "medium" -}}
+{{- $size2 := lower .size2 | default "full" -}}
 {{- $maxwidth := (int (.maxwidth | default 2000)) -}}
 {{- $title := .title | default "" }}
 {{- $caption := .caption | default "" -}}
@@ -75,7 +75,7 @@
 {{- $alt := .alt | default $title -}}
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
-{{- $height := .height | default "" -}}{{/* string may have units e.g. 100px */}}
+{{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
 
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
@@ -136,7 +136,7 @@
         {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
       {{- end -}}
     {{- else -}}
-      <p>Mystery height is '{{ .height }}'.
+      <p>Mystery height is '{{ $height }}'.
     {{- end -}}
     {{/* warnf "fs(h): heightval=%v hunit=%s imagewidth=%v wunit=%s imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $widthunit $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
 

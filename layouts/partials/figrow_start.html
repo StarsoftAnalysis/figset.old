@@ -23,8 +23,8 @@
 */}}
 
 {{/* Parameters and defaults */}}
-{{ $justify := .justify | default "space-around" }}
-{{ $valign  := .valign  | default "flex-start" }}
+{{ $justify := lower .justify | default "space-around" }}
+{{ $valign  := lower .valign  | default "flex-start" }}
 {{ if eq $justify "left" }}
   {{ $justify = "start" }}  
 {{ else if eq $justify "right" }}
