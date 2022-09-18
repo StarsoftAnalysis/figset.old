@@ -5,6 +5,9 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
+  * FIRST: decide how multiple figsets should behave if not within a figrow. -- maybe don't try to hard -- encourage use of figrow.
+     - e.g. poses l, c, r  pushes third one to next line.
+  * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
   * or flex-basis -- could do a percentage if we knew how may are in the row (can the parent tell us?)
@@ -85,7 +88,7 @@
 {{ end }}
 
 {{/* TEMP diagnostics: */}}
-{{ $caption = printf "i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow }}
+{{/* $caption = printf "i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow */}}
 
 {{/* warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image */}}
 {{/* There should always be an image (see placeholder above) so just return if not */}}
@@ -143,7 +146,7 @@
   {{- else -}}{{/* starting with size/width, so more complicated... */}}
 
     {{/* 
-      Image sizes are : thumb  small  medium  large  full
+      Image sizes are : thumbnail  small  medium  large  full -- any abbreviation is enough. 
       Based on a 'typical' 1.4:1 image, these fit across screen sizes 
       as defined in the $idealWXxx slices below (in vw aka % units)
       (bearing in mind that the available width is not the whole screen width)
@@ -152,7 +155,6 @@
 
       Each real image, with aspect ratio R', should have the same area, so its height is sqrt(A/R')
       and its width is its height*R'
-
     */}}
     {{/*       screen width:  1200+ 992+ 768+ 576+ else */}}
     {{ $idealWThumb  := slice   10   12   15   25   45 }}
@@ -162,16 +164,18 @@
     {{ $idealWFull   := slice  100  100  100  100  100 }}
 
     {{ $idealW := $idealWMedium }}{{/* used if none of the strings match */}}
-    {{ if (eq $size "thumb") }}
+    {{ if hasPrefix $size "t" }}
       {{ $idealW = $idealWThumb }}
-    {{ else if (eq $size "small") }}
+    {{ else if hasPrefix $size "s" }}
       {{ $idealW = $idealWSmall }}
-    {{ else if (eq $size "medium") }}
+    {{ else if hasPrefix $size "m" }}
       {{ $idealW = $idealWMedium }}
-    {{ else if (eq $size "large") }}
+    {{ else if hasPrefix $size "l" }}
       {{ $idealW = $idealWLarge }}
-    {{ else if (eq $size "full") }}
+    {{ else if hasPrefix $size "f" }}
       {{ $idealW = $idealWFull }}
+    {{ else }}
+      {{ warnf "figset: wrong value for size '%s' -- using 'medium' instead." $size }}
     {{ end }}
     {{/* warnf ">>> $size='%s'  equaltothumb = %v\n" $size (eq $size "thumb") */}}
 
@@ -194,14 +198,15 @@
 
     {{/* TODO could do this the bootstrap way e.g. d-flex */}}
     {{/* TODO tell user not to use left or right within a row -- we really want things centered in a row */}}
-    {{- if or (eq $position "left") (eq $position "start") -}}
+    {{/* position: left | start | right | end | centre -- just use first letter */}}
+    {{- if or (hasPrefix $position "l") (hasPrefix $position "s") -}}
       {{/* need e.g. text-right for figure, float-right for img NO! */}}
       {{- $posclass = "float-start mr-3" -}}
-    {{- else if or (eq $position "right") (eq $position "end") -}}
+    {{- else if or (hasPrefix $position "r") (hasPrefix $position "e") -}}
       {{- $posclass = "float-end ml-3" -}}
-    {{- else if or (eq $position "centre") (eq $position "center") -}}
-      {{/* need text-center for figure, "mx-auto d-block" img */}}
-      {{- $posclass = "xxmx-auto xxd-block" -}}{{/* FIXME */}}
+    {{- else if (hasPrefix $position "c") -}}
+      {{/* FIXME use text-center in enclosing div instead of "m-auto d-block" to center img */}}
+      {{- $posclass = "mx-auto d-block" -}}
     {{- else -}}
       {{- $posclass = "" -}}
     {{- end -}}
@@ -240,7 +245,8 @@
     {{/* $figcss = (printf "margin: 0; width: %q;" $imagewidthstring) */}}{{/* FIXME but if .height specified, we're not using $imagewidth -- need to use ... */}}
     {{/* FIXME probably not needed because it's already the exact size we want  $imgcss = (printf "height: %s;" .height) */}}
   {{- else -}}
-    {{- $figcss = (printf "margin: 0; flex: 0 0 auto; %s" $imagewidthstring) -}}
+    {{/* $figcss = (printf "margin: 0; flex: 0 0 auto; %s" $imagewidthstring) NO!! no flex in the figure */}}
+    {{- $figcss = (printf "margin: 0; %s" $imagewidthstring) -}}
     {{- $figclass = "mx-2" -}}
   {{- end -}}
   {{/* warnf "fs figcss=%s  figclass=%s  imgcss=%s  \n" $figcss $figclass $imgcss */}}

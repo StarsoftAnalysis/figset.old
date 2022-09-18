@@ -33,8 +33,7 @@
   {{ $justify = "center" }}  
 {{ end }}
 
-
-<p>figrow partial: $justify is "{{ $justify }}" </p>
+<p clear=both>figrow_start: justify="{{ $justify }}" valign="{{ $valign }}"</p>
 
 {{/* TODO could do this the bootstrap way e.g. d-flex */}}
 <div class=figrow style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $valign }}; ">
