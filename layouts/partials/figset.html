@@ -5,9 +5,10 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
-  * FIRST: decide how multiple figsets should behave if not within a figrow. -- maybe don't try to hard -- encourage use of figrow.
+  * FIRST: decide how multiple figsets should behave if not within a figrow. -- maybe don't try too hard -- encourage use of figrow.
      - e.g. poses l, c, r  pushes third one to next line.
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
+  * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
   * or flex-basis -- could do a percentage if we knew how may are in the row (can the parent tell us?)
@@ -82,7 +83,6 @@
 
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
-  {{ $position = "" }}
 {{ else }}
   {{ $height = "" }}
 {{ end }}
@@ -114,6 +114,26 @@
   {{- $sizes := "" -}}
   
   {{ $sizeString := "" }}
+
+  {{/* Position is ignored within a figrow */}}
+  {{ if $figrow }}
+    {{ if $position }}
+      {{ warnf "figset: position ignored within figrow for image %v" $image }}
+    {{ else }}
+      {{/* position: left | start | right | end | centre -- can be abbreviated. */}}
+      {{- if or (hasPrefix "left" $position) (hasPrefix "start" $position) -}}
+        {{/* need e.g. text-right for figure, float-right for img NO! */}}
+        {{- $posclass = "float-start mr-3" -}}
+      {{- else if or (hasPrefix "right" $position) (hasPrefix "end" $position) -}}
+        {{- $posclass = "float-end ml-3" -}}
+      {{- else if or (hasPrefix "centre" $position) (hasPrefix "center" $position) -}}
+        {{/* FIXME? use text-center in enclosing div instead of "m-auto d-block" to center img */}}
+        {{- $posclass = "mx-auto d-block" -}}
+      {{- else -}}
+        {{- warnf "figset: invalid position '%s' for image %v" $position $image -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
 
   {{/* height overrides size */}}
   {{/* height-limited row needs a lot of work -- e.g. non-px suffixes; images don't align if some captions are multiline and some aren't */}}
@@ -175,7 +195,7 @@
     {{ else if hasPrefix $size "f" }}
       {{ $idealW = $idealWFull }}
     {{ else }}
-      {{ warnf "figset: wrong value for size '%s' -- using 'medium' instead." $size }}
+      {{ warnf "figset: invalid value for size '%s' -- using 'medium' instead." $size }}
     {{ end }}
     {{/* warnf ">>> $size='%s'  equaltothumb = %v\n" $size (eq $size "thumb") */}}
 
@@ -195,21 +215,6 @@
     {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
     {{/* warnf "sizeString=%s\n" $sizeString */}} 
 
-
-    {{/* TODO could do this the bootstrap way e.g. d-flex */}}
-    {{/* TODO tell user not to use left or right within a row -- we really want things centered in a row */}}
-    {{/* position: left | start | right | end | centre -- just use first letter */}}
-    {{- if or (hasPrefix $position "l") (hasPrefix $position "s") -}}
-      {{/* need e.g. text-right for figure, float-right for img NO! */}}
-      {{- $posclass = "float-start mr-3" -}}
-    {{- else if or (hasPrefix $position "r") (hasPrefix $position "e") -}}
-      {{- $posclass = "float-end ml-3" -}}
-    {{- else if (hasPrefix $position "c") -}}
-      {{/* FIXME use text-center in enclosing div instead of "m-auto d-block" to center img */}}
-      {{- $posclass = "mx-auto d-block" -}}
-    {{- else -}}
-      {{- $posclass = "" -}}
-    {{- end -}}
 
     <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
     {{- range $w := $allwidths -}}

@@ -1,11 +1,8 @@
 {{/* figrow.html -- shortcode for grouping figsets into a row 
 
   Parameters: -- see partials/figrow_start.html
-    * height - in CSS units, if any.  Doesn't work well with captions  TODO
-    * gallery - name of a gallery.  If omitted, there'll be no gallery effect.
-               - all images with the same gallery name will show in the same lightbox carousel
-    * justify - left/start right/end center/centre space-around space-evenly space-between (uses flex's justify-content)
-    * valign - top center/centre bottom (uses flex's align-items)
+    * justify - values as for CSS's justify-content
+    * align - values as for CSS's align-items
     * clear - if true, adds a clear=both after the figrow.
   NOTE Other figset options can be set for figrow and will be used in figset
   e.g. {{< figrow size=large >}}{{ figset name="x.png" }}{{ figset name="y.jpg" size=small }}...
@@ -16,15 +13,17 @@
 
 {{/* Get parameters and apply defaults */}}
 {{/* not needed if no default to supply.   or should the partial do the defaults?  Yes.  */}} 
+{{/* 
 {{ $gallery := .Get "gallery" }}
 {{ $height  := .Get "height"  }}
+*/}}
 {{ $justify := .Get "justify" }}
-{{ $valign  := .Get "valign"  }}
-{{ $clear   := .Get "clear"   }}
+{{ $align   := .Get "align" }}
+{{ $clear   := .Get "clear" }}
 
 {{/* We DON'T need to deal with parameters used by figset via its .Parent -- the shortcode mechanism handles that automatically. */}}
 
-{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "gallery" $gallery  "height" $height  "justify" $justify  "valign" $valign  ) }}
+{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "justify" $justify  "align" $align) }}
   {{ with .Inner }}{{ . }}{{ end }}
-{{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear ) }}
+{{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear) }}
 

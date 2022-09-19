@@ -7,35 +7,58 @@
   from the figset shortcode: this doesn't work when using the partials directly,
   so common values, e.g. gallery or size, have to be in each invocation of figset.
 
-  Parameters (in the dict/context):
-      justify
-      valign
+  Parameters (in the dict/context) -- accept variations on the CSS values:
+    * justify-content - values as for CSS's justify-content
+    * align-items - values as for CSS's align-items
   Other parameters supplied by the figrow shortcode are accessed by the 
-  figset shortcode via its .Parent.
+  figset shortcode via its .Parent.  They are not error-checked here.
 
   If from another template (rather than via shortcodes), do this: 
   (not use of .figrow to tell figset that it's in a row)
-    {{ partial "figrow_start.html" (dict  "page" .Page  "justify" $justify  "valign" $valign "position" "center" ...  ) }}
-    {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" $gallery  "name" "image1.jpg" "caption" "a photo" ...)   }}
-    {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" $gallery  "name" "image2.jpg" "caption" "another photo" ...) }}
-    {{ partial "figrow_end.html"   (dict  "page" .Page )  }}
+    {{ partial "figrow_start.html" (dict  "page" .Page  "justify-contents" center  "align-items" "top"  "size"  "small"  ...) }}
+    {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" "foo"  "name" "image1.jpg"  "caption" "a photo"  ...)   }}
+    {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" "foo"  "name" "image2.jpg"  "caption" "another photo"  ...) }}
+    {{ partial "figrow_end.html"   (dict  "page" .Page) }}
 
 */}}
 
-{{/* Parameters and defaults */}}
+{{ $justify := .justify }}
+{{ $align   := .align   }}
+
+{{/* Parameters and defaults NO -- see above */}}
+{{/* 
 {{ $justify := lower .justify | default "space-around" }}
-{{ $valign  := lower .valign  | default "flex-start" }}
-{{ if eq $justify "left" }}
-  {{ $justify = "start" }}  
-{{ else if eq $justify "right" }}
-  {{ $justify = "end" }}  
-{{ else if eq $justify "centre" }}
-  {{ $justify = "center" }}  
+{{ $valign  := lower .align  | default "flex-start" }}
+
+{{ $justify2 := $justify }}
+{{ if hasPrefix $justify "flex-" }}
+  {{ $justify2 = substr $justify 5 }}
+{{ else if hasPrefix $justify "space-" }}
+  {{ $justify2 = substr $justify 6 }}
+{{ end }}
+{{ if or (hasPrefix "left" $justify2) (hasPrefix "start" $justify2) }}
+  {{ $justify2 = "start" }}  
+{{ else if or (hasPrefix "right" $justify2) (hasPrefix "end" $justify2) }}
+  {{ $justify2 = "end" }}  
+{{ else if or (hasPrefix "centre" $justify2) (hasPrefix "centre" $justify2) }}
+  {{ $justify2 = "center" }}
+{{ else if (hasPrefix "around" $justify2) }}
+  {{ $justify2 = "space-around" }}
+{{ else if (hasPrefix "between" $justify2) }}
+  {{ $justify2 = "space-between" }}
+{{ else if (hasPrefix "evenly" $justify2) }}
+  {{ $justify2 = "space-evenly" }}
+{{ else }}
+  {{ warnf "figrow: invalid justify value '%s'; using 'center'" $justify }}
+  {{ $justify2 = "center" }}
 {{ end }}
 
-<p clear=both>figrow_start: justify="{{ $justify }}" valign="{{ $valign }}"</p>
+{{ $valign2 := $valign }}
+*/}}
+
+<p clear=both>figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
 
 {{/* TODO could do this the bootstrap way e.g. d-flex */}}
-<div class=figrow style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $valign }}; ">
+<div class=figrow style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $align }}; ">
 
 {{/* The end of the div is in partials/figrow_end.html */}}
