@@ -119,20 +119,20 @@
   {{ if $figrow }}
     {{ if $position }}
       {{ warnf "figset: position ignored within figrow for image %v" $image }}
-    {{ else }}
-      {{/* position: left | start | right | end | centre -- can be abbreviated. */}}
-      {{- if or (hasPrefix "left" $position) (hasPrefix "start" $position) -}}
-        {{/* need e.g. text-right for figure, float-right for img NO! */}}
-        {{- $posclass = "float-start mr-3" -}}
-      {{- else if or (hasPrefix "right" $position) (hasPrefix "end" $position) -}}
-        {{- $posclass = "float-end ml-3" -}}
-      {{- else if or (hasPrefix "centre" $position) (hasPrefix "center" $position) -}}
-        {{/* FIXME? use text-center in enclosing div instead of "m-auto d-block" to center img */}}
-        {{- $posclass = "mx-auto d-block" -}}
-      {{- else -}}
-        {{- warnf "figset: invalid position '%s' for image %v -- using 'centre'" $position $image -}}
-        {{- $posclass = "mx-auto d-block" -}}
-      {{- end -}}
+    {{- end -}}
+  {{ else }}
+    {{/* position: left/start | right/end | centre/center -- can be abbreviated. */}}
+    {{- if or (hasPrefix "left" $position) (hasPrefix "start" $position) -}}
+      {{/* need e.g. text-right for figure, float-right for img NO! */}}
+      {{- $posclass = "float-start mr-3" -}}
+    {{- else if or (hasPrefix "right" $position) (hasPrefix "end" $position) -}}
+      {{- $posclass = "float-end ml-3" -}}
+    {{- else if or (hasPrefix "centre" $position) (hasPrefix "center" $position) -}}
+      {{/* FIXME? use text-center in enclosing div instead of "m-auto d-block" to center img */}}
+      {{- $posclass = "mx-auto d-block" -}}
+    {{- else -}}
+      {{- warnf "figset: invalid position '%s' for image %v -- using 'centre'" $position $image -}}
+      {{- $posclass = "mx-auto d-block" -}}
     {{- end -}}
   {{- end -}}
 
