@@ -32,7 +32,7 @@
     .figrow -- true if we're within a figrow (which is independent of whether there's a gallery)
     .name (of image within the page bundle)
     .image (resource) or name (name of image file in bundle) -- image overrides name
-    .position - left, right, centre...
+    .position - left/start, right/end, centre/center
     .size - thumb, small, medium, large, full  TODO other sizes  FIXME hook into bootstrap sizing
     .maxwidth -- biggest size used for srcset in pixels
     .size2 - like size, but presumably bigger -- to expand image
@@ -130,7 +130,8 @@
         {{/* FIXME? use text-center in enclosing div instead of "m-auto d-block" to center img */}}
         {{- $posclass = "mx-auto d-block" -}}
       {{- else -}}
-        {{- warnf "figset: invalid position '%s' for image %v" $position $image -}}
+        {{- warnf "figset: invalid position '%s' for image %v -- using 'centre'" $position $image -}}
+        {{- $posclass = "mx-auto d-block" -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}

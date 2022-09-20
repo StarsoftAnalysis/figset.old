@@ -5,7 +5,7 @@ Menu: main
 
 Blurb before row of three.
 
-{{<figrow gallery=test1 justify=centre size=thumbnail >}}
+{{<figrow gallery=test1 justify=center size=thumbnail >}}
 {{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
 {{<figset image="img20220824_105444_DRO-800.jpg"  >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}

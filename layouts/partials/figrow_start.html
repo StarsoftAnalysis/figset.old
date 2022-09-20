@@ -59,6 +59,7 @@
 <p clear=both>figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
 
 {{/* TODO could do this the bootstrap way e.g. d-flex */}}
+{{/* NOTE Don't use safeCSS here because it isn't (because we haven't validated it) -- Hugo will replace naughty CSS values with ZgotmplZ */}}
 <div class=figrow style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $align }}; ">
 
 {{/* The end of the div is in partials/figrow_end.html */}}
