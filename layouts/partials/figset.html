@@ -105,7 +105,6 @@
 
   {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
-  {{- $widthunit := "" -}}
   {{- $imagelist := slice -}}{{/* empty slice */}}
   {{- $imagewidth := 0 -}}
   {{- $imagewidthstring := "" -}}
@@ -113,7 +112,7 @@
   {{- $posclass := "" -}}
   {{- $sizes := "" -}}
   
-  {{ $sizeString := "" }}
+  {{- $sizeString := "" -}}
 
   {{/* Position is ignored within a figrow */}}
   {{ if $figrow }}
@@ -138,31 +137,31 @@
 
   {{/* height overrides size */}}
   {{/* height-limited row needs a lot of work -- e.g. non-px suffixes; images don't align if some captions are multiline and some aren't */}}
+
   {{- if $height -}}
 
-    {{/* depends on units */}}
+    {{/* We can only handle pixels as units -- either "123px" or "123" */}}
+    {{- $heightunit = "px" -}}
     {{- if strings.HasSuffix $height "px" -}}
-      {{- warnf "px height is %v\n" .height -}}
-      {{- $heightval = int (strings.TrimSuffix "px" .height) -}}
-      {{- $heightunit = "px" -}}
-      {{- $imagewidth = (mul $heightval $aspect) -}}
-      {{- $widthunit = "px" -}}
-      {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
-
-      {{- if gt $heightval $origheight -}}
-        {{/* don't want to expand image, so give it a margin */}}
-        {{- $imagemargincss = printf "margin: %fpx %fpx; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) (div (sub $imagewidth $origwidth) 2.0) -}}
-        {{/* only need the exact size... */}}
-        {{- $imagelist = $imagelist | append $image -}}
-      {{- else -}}
-        {{/* resize to the exact size required */}}
-        {{/* See [image] section of config.toml for image processing options */}}
-        {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
-      {{- end -}}
+      {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
     {{- else -}}
-      <p>Mystery height is '{{ $height }}'.
+      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any suffix such as "123vh" */}}
     {{- end -}}
-    {{/* warnf "fs(h): heightval=%v hunit=%s imagewidth=%v wunit=%s imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $widthunit $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
+    {{- $imagewidth = (mul $heightval $aspect) -}}
+    {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
+    {{- if gt $heightval $origheight -}}
+      {{/* don't want to expand image, so give it a margin */}}
+      {{- $imagemargincss = printf "margin: %fpx 0; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) -}}
+      {{- $imagelist = $imagelist | append $image -}}
+    {{- else -}}
+      {{/* resize to the exact size required */}}
+      {{/* See [image] section of config.toml for image processing options */}}
+      {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
+    {{- end -}}
+    {{/* warnf "fs(h): heightval=%v hunit=%s imagewidth=%v imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
+    {{- if $size -}}
+      {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
+    {{- end -}}
 
   {{- else -}}{{/* starting with size/width, so more complicated... */}}
 
@@ -216,7 +215,6 @@
     {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
     {{/* warnf "sizeString=%s\n" $sizeString */}} 
 
-
     <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
     {{- range $w := $allwidths -}}
       {{- if le $w $maxwidth -}}
@@ -227,7 +225,7 @@
       {{- $imagelist = $imagelist | append $image -}}
     {{- end -}}
 
-  {{- end -}}{{/* else, not .height */}}
+  {{- end -}}{{/* else, not $height */}}
 
   {{/* warnf "fs: title=%s h=%v iw=%v aspect=%.2f iw/aspect=%.2f area=%v imcss=%s\n" $title .height (int $imagewidth) $aspect (div $imagewidth $aspect) (int (mul $imagewidth (div $imagewidth $aspect))) $imagemargincss */}}
   
