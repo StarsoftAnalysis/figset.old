@@ -36,7 +36,7 @@
 {{ $size     := .Get "size"     | default ($p.Get "size")     }}
 {{ $height   := .Get "height"   | default ($p.Get "height")   }}
 {{ $maxwidth := .Get "maxwidth" | default ($p.Get "maxwidth") }}
-{{ $size2    := .Get "size2"    | default ($p.Get "size2")    }}
+{{ $selfsize := .Get "selfsize" | default ($p.Get "selfsize") }}
 {{ $title    := .Get "title"    | default ($p.Get "title")    }}
 {{ $caption  := .Get "caption"  | default ($p.Get "caption")  }}
 {{ $alt      := .Get "alt"      | default ($p.Get "alt")      }}
@@ -44,5 +44,5 @@
 {{ $gallery  := .Get "gallery"  | default ($p.Get "gallery")  }}
 {{ $lightbox := .Get "lightbox" | default ($p.Get "lightbox") }}
 
-{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "size2" $size2  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "figrow" $figrow ) }}
+{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "selfsize" $selfsize  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "figrow" $figrow ) }}
 

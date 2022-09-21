@@ -5,20 +5,25 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
-  * FIRST: decide how multiple figsets should behave if not within a figrow. -- maybe don't try too hard -- encourage use of figrow.
-     - e.g. poses l, c, r  pushes third one to next line.
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
-  * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
+  * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-  * or flex-basis -- could do a percentage if we knew how may are in the row (can the parent tell us?)
   * margin:0 for figures -- check that this is OK in all cases. - maybe only in figrow
-  * get rid of bootstrap or use it properly
+  * get rid of bootstrap or use it properly -- via external CSS
   * decouple from lightboxSSA to allow use of other lightboxes??
+  * selfsize to limit size of expanded image, e.g. if not in a gallery
+  * url/link -- option e.g. url=self to link to selfsize version of same image
+    - rename url to link?
+  * fix 'null' when hovering over image in carousel
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
   * use flex-grow and -shrink ??  NO -- see https://codepen.io/starsoftanalysis/pen/Rwyppdv
+  * FIRST: decide how multiple figsets should behave if not within a figrow. -- maybe don't try too hard -- encourage use of figrow.
+     - e.g. poses l, c, r  pushes third one to next line.
+  * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
+  * NO: could do a percentage if we knew how many are in the row (can the parent tell us?)
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -34,12 +39,12 @@
     .image (resource) or name (name of image file in bundle) -- image overrides name
     .position - left/start, right/end, centre/center
     .size - thumb, small, medium, large, full  TODO other sizes  FIXME hook into bootstrap sizing
-    .maxwidth -- biggest size used for srcset in pixels
-    .size2 - like size, but presumably bigger -- to expand image
+    .maxwidth -- biggest size used for srcset in pixels, or for url=self
+    .selfsize -- max size in px of url=self image
     .title
     .caption
     .alt
-    .url -- url to link to -- on second click if galleried...
+    .url -- url to link to -- on second click if galleried, or 'self'
     .gallery - name of gallery -- just has to be the same on a group of figures to make them a gallery - implies lightbox
     .lightbox - anything truthy to add lightbox effect without making it a gallery
     .height -- ?units -- maybe need responsive values.  Overrides size, for use (e.g. from figrow) to make a row of images line up.
@@ -48,7 +53,6 @@
             -- if px, calculate width as px, then need to do media things for sizes, copying transitions from those used for bootstrap
             -- if em, depends on font size, so maybe don't handle that.  Or assume 16px
 
-      TODO -- size2 to limit size of expanded image, e.g. if not in a gallery
 
 */}}
 
@@ -66,12 +70,11 @@
 {{ if not $image }}
   {{ $image = resources.GetMatch "images/placeholder.png" }}{{/* FIXME looks in assets/images/ */}}
 {{ end }}
-{{ warnf "figset: $name=%s  .image=%v  $image is %v" $name .image $image }}
 
 {{/* carry on with parameters and defaults */}}
 {{- $position := lower .position | default "left" -}}
 {{- $size := lower .size | default "medium" -}}
-{{- $size2 := lower .size2 | default "full" -}}
+{{- $selfsize := (int (.selfsize | default 2000)) -}}
 {{- $maxwidth := (int (.maxwidth | default 2000)) -}}
 {{- $title := .title | default "" }}
 {{- $caption := .caption | default "" -}}
@@ -97,11 +100,11 @@
   {{- $origwidth := $image.Width -}}
   {{- $origheight := $image.Height -}}
   {{- $aspect := div (float $origwidth) (float $origheight) -}}
+  {{- $origsize := int (math.Max $origwidth $origheight) -}}
   {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
-  {{/* Just a big list, in descending order (so that default size is first, and so that JS (i.e. lightboxSSA) can handle the list easily) */}} 
-  {{- $allwidths := slice 1800 1600 1400 1200 1000 800 600 400 200 -}}
-  <!-- <p>aspect={{ $aspect }}, allwidths={{ $allwidths }}</p> -->
-  {{/* warnf "fs: origw,h=%d,%d aspect=%.2f maxwidth=%d\n" $origwidth $origheight $aspect $maxwidth */}}
+  {{/* Just a big list, in descending order (so that default size is first, and so that JS (i.e. lightboxSSA) can handle the list easily) */}} {{/* REMOVE -- it's in _imagesize */}}
+  {{- $allwidths := slice 1800 1600 1400 1200 1000 800 600 400 200 -}}{{/* REMOVE -- it's in _imagesize */}}
+  {{/* warnf "fs: origw,h=%d,%d aspect=%.2f origsize=%d ssize=%d maxwidth=%d\n" $origwidth $origheight $aspect $origsize $selfsize $maxwidth */}}
 
   {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
@@ -113,6 +116,26 @@
   {{- $sizes := "" -}}
   
   {{- $sizeString := "" -}}
+
+  {{- if eq (lower $url) "self" -}}
+    {{/* Link to the image itself -- but limited by selfsize */}}
+    {{/* FIXME do we need to do the whole srcset thing for the linked image? NO *
+    {{- $imagedetails := partial "figset_imagesize.html" (dict "image" $image "size" $selfsize "aspect" $aspect "maxwidth" $maxwidth) -}}
+    {{ warnf "imagedetails: %+v" $imagedetails }}
+    {{- $linkedimage := index $imagedetails.imagelist 0 -}}
+    {{- $url = $linkedimage.RelPermalink -}}
+    {{ warnf "linked=%+#v url=%s" $linkedimage $url }}
+    */}}
+    {{- $linkedimage := $image -}}
+    {{- if gt $origsize $selfsize -}}
+      {{- if eq $origsize $origwidth -}}
+        {{- $linkedimage = $image.Resize (printf "%dx jpg" $selfsize) -}}
+      {{- else -}}
+        {{- $linkedimage = $image.Resize (printf "x%d jpg" $selfsize) -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $url = $linkedimage.RelPermalink -}}
+  {{- end -}}
 
   {{/* Position is ignored within a figrow */}}
   {{ if $figrow }}
@@ -165,6 +188,7 @@
 
   {{- else -}}{{/* starting with size/width, so more complicated... */}}
 
+    {{/* TODO need this for selfsize too, so make it a function, ie a partial that returns stuff */}}
     {{/* 
       Image sizes are : thumbnail  small  medium  large  full -- any abbreviation is enough. 
       Based on a 'typical' 1.4:1 image, these fit across screen sizes 
