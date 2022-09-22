@@ -3,7 +3,7 @@ Title: Gallery
 menu: main
 ---
 
-{{<figrow gallery=test1 justify=space-evenly xheight=200 size=thumbnail >}}
+{{<figrow gallery=test1 justify=space-evenly caption="sdlfkj lk jkj lskdfj lsdkfj sldkfj lskdjf" height=200 size=thumbnail >}}
 {{<figset name="FordingbridgeClockTower.jpg" >}}
 {{<figset name="P1130500.JPG" >}}
 {{<figset name="P1130501.JPG" xsize=small >}}

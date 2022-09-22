@@ -47,7 +47,8 @@
     .url -- url to link to -- on second click if galleried, or 'self'
     .gallery - name of gallery -- just has to be the same on a group of figures to make them a gallery - implies lightbox
     .lightbox - anything truthy to add lightbox effect without making it a gallery
-    .height -- ?units -- maybe need responsive values.  Overrides size, for use (e.g. from figrow) to make a row of images line up.
+    .height -- only px units so far. 
+        -- ?units -- maybe need responsive values.  Overrides size, for use (e.g. from figrow) to make a row of images line up.
         -- allow: px  em  % .... ...  remember at this stage we have no idea of screen size or shape
             -- if %, can calculate width as % (of container) and then estimate sizes as vw -- or maybe just specify sizes as vh
             -- if px, calculate width as px, then need to do media things for sizes, copying transitions from those used for bootstrap
@@ -87,7 +88,6 @@
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
 {{ else }}
-  {{ $height = "" }}
 {{ end }}
 
 {{/* TEMP diagnostics: */}}
@@ -159,7 +159,7 @@
   {{- end -}}
 
   {{/* height overrides size */}}
-  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes; images don't align if some captions are multiline and some aren't */}}
+  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes */}}
 
   {{- if $height -}}
 
@@ -173,7 +173,7 @@
     {{- $imagewidth = (mul $heightval $aspect) -}}
     {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
     {{- if gt $heightval $origheight -}}
-      {{/* don't want to expand image, so give it a margin */}}
+      {{/* don't want to expand image, so give it a top/bottom margin */}}
       {{- $imagemargincss = printf "margin: %fpx 0; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) -}}
       {{- $imagelist = $imagelist | append $image -}}
     {{- else -}}
