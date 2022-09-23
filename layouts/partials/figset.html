@@ -321,9 +321,10 @@
     {{- $link = false -}}
   {{- end -}}
 
+  {{ $figcss = printf "%s; position: relative;" $figcss }}
+
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
   <figure class="figure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
-  <div>
   <img loading=lazy class="img-fluid xxmx-2 border border-primary"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
@@ -342,9 +343,8 @@
     {{/* object-fit: contain; ??? */}}
   >
   {{- if $caption -}}
-    <figcaption class=figure-caption>{{ $caption | safeHTMLAttr }}</figcaption>
+    <figcaption class=figure-caption style="position: absolute; width: 100%;">{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
-  </div>
   </figure>
   {{- if $link -}}
     </a>
