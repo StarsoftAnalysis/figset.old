@@ -66,15 +66,15 @@ blockquote {
 // Figrow/figset
 .figrow {
   // what's this for? -- it's overridden as margin 0 in the html at the moment
-	margin: 0 -3vw -3vw;
-	figure {
-		margin: 0 3vw 3vw;
-	}
+//	margin: 0 -3vw -3vw;
+//	figure {
+//		margin: 0 3vw 3vw;
+//	}
 }
-.figset {
+figure.figset {
 	display: inline-table;
 	figcaption {
-		display: table-caption;
+		//display: table-cell;
 		caption-side: bottom;
 	}
 }

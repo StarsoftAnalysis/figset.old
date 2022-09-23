@@ -16,6 +16,10 @@
   * url/link -- option e.g. url=self to link to selfsize version of same image
     - rename url to link?
   * fix 'null' when hovering over image in carousel
+  * height is fixed no. of pixels, i.e. not responsive, which is rubbish.  at the moment can use width=nnpx to make
+    the caption fit the width of the picture.
+  * try height with vw units...
+  * fitting caption to responsive image width! -- may need JS!!  see this: https://codepen.io/starsoftanalysis/pen/QWrqyGQ
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -164,11 +168,16 @@
   {{- if $height -}}
 
     {{/* We can only handle pixels as units -- either "123px" or "123" */}}
-    {{- $heightunit = "px" -}}
+    {{- $heightunit = "px" -}}{{/* default if no (or unknown) units */}}
     {{- if strings.HasSuffix $height "px" -}}
       {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
+    {{/* $heightunit is never used!
+    {{- else if strings.HasSuffix $height "vh" -}}
+      {{- $heightval = int (strings.TrimSuffix "vh" $height) -}}
+      {{- $heightunit = "vh" -}}
+    */}}
     {{- else -}}
-      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any suffix such as "123vh" */}}
+      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any unknown suffix */}}
     {{- end -}}
     {{- $imagewidth = (mul $heightval $aspect) -}}
     {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
@@ -314,6 +323,7 @@
 
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
   <figure class="figure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  <div>
   <img loading=lazy class="img-fluid xxmx-2 border border-primary"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
@@ -334,6 +344,7 @@
   {{- if $caption -}}
     <figcaption class=figure-caption>{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
+  </div>
   </figure>
   {{- if $link -}}
     </a>
