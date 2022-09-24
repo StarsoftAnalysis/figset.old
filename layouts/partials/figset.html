@@ -20,6 +20,7 @@
     the caption fit the width of the picture.
   * try height with vw units...
   * fitting caption to responsive image width! -- may need JS!!  see this: https://codepen.io/starsoftanalysis/pen/QWrqyGQ
+  * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -321,10 +322,13 @@
     {{- $link = false -}}
   {{- end -}}
 
+  {{ $figcss = printf "%s; display: table;" $figcss }}
+  {{ $imgcss = printf "%s; display: table-cell;" $figcss }}
+  {{ $capcss := "display: table-caption; caption-side: bottom;" }}
+
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
-  <figure class="figure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
-  <div>
-  <img loading=lazy class="img-fluid xxmx-2 border border-primary"
+  <figure class="xfigure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  <img loading=lazy class="ximg-fluid xxmx-2 xborder xborder-primary"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
       srcset="
@@ -342,9 +346,8 @@
     {{/* object-fit: contain; ??? */}}
   >
   {{- if $caption -}}
-    <figcaption class=figure-caption>{{ $caption | safeHTMLAttr }}</figcaption>
+  <figcaption xclass=figure-caption style="{{ $capcss | safeCSS }}">{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
-  </div>
   </figure>
   {{- if $link -}}
     </a>

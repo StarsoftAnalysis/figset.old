@@ -14,7 +14,13 @@
 
   Parameters (in the dict/context) -- accept variations on the CSS values:
     * justify-content - values as for CSS's justify-content
+      - left -- implies caption to left \
+      - right -- caption to right        > caption aligment becomes default for capalign argument to figset.
+      - others -- caption centred       / 
     * align-items - values as for CSS's align-items
+      - center or baseline are probably best with captions ; flex-start (aka top) is good too.
+      - flex-end (bottom) with captions makes the bottoms of the images uneven -- use baseline instead.
+      - stretch moves the caption away from the image-- least desirable
   Other parameters supplied by the figrow shortcode are accessed by the 
   figset shortcode via its .Parent.  They are not error-checked here.
 
@@ -61,7 +67,7 @@
 {{ $valign2 := $valign }}
 */}}
 
-<p clear=both>figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
+<p clear=both>> figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
 
 {{/* TODO could do this the bootstrap way e.g. d-flex */}}
 {{/* NOTE Don't use safeCSS here because it isn't (because we haven't validated it) -- Hugo will replace naughty CSS values with ZgotmplZ */}}
