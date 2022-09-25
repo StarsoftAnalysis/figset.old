@@ -64,12 +64,19 @@ blockquote {
 }
 
 // Figrow/figset
-.figrow {
-  // what's this for? -- it's overridden as margin 0 in the html at the moment
-//	margin: 0 -3vw -3vw;
-//	figure {
-//		margin: 0 3vw 3vw;
-//	}
+div.figrow {
+  // what's this for?
+	//margin: 0 -3vw -3vw;
+	//figure {
+	//	margin: 0 3vw 3vw;
+	//}
+  margin: 0;
+  display: flex; 
+  flex-direction: row; 
+  flex-wrap: wrap;
+  figure { display: table; }
+  img { display: table-cell; }
+  figcaption { display: table-caption; caption-side: bottom; }
 }
 /* wrong:
 .figrow-align-center { align-items: center }
@@ -78,6 +85,7 @@ blockquote {
 */
 
 figure.figset {
+  margin: 0 2vw 2vw;
 	display: inline-table;
 	figcaption {
 		//display: table-cell;

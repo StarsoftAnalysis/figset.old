@@ -19,7 +19,6 @@
   * height is fixed no. of pixels, i.e. not responsive, which is rubbish.  at the moment can use width=nnpx to make
     the caption fit the width of the picture.
   * try height with vw units...
-  * fitting caption to responsive image width! -- may need JS!!  see this: https://codepen.io/starsoftanalysis/pen/QWrqyGQ
   * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
 
   DONE:
@@ -91,6 +90,7 @@
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
+{{- $align := lower .align }}
 {{- $class1 := .class1 -}}
 {{- $class2 := .class2 -}}
 {{- $id := .id -}}
@@ -167,6 +167,29 @@
       {{- $posclass = "mx-auto d-block" -}}
     {{- end -}}
   {{- end -}}
+
+  {{/* align-self: default centre, or baseline with a caption */}}
+  {{ $alignself := "center" }}
+  {{/* different default if there's a caption messes up a row where only some have captions:
+  {{ if $caption }}
+    {{ $alignself = "baseline" }}
+  {{ end }}
+  */}}
+  {{ if $align }}
+    {{ if hasPrefix "start" $align }}
+      {{ $alignself = "start" }}
+    {{ else if hasPrefix "end" $align }}
+      {{ $alignself = "end" }}
+    {{ else if or (hasPrefix "centre" $align) (hasPrefix "centre" $align) }}
+      {{ $alignself = "center" }}
+    {{ else if hasPrefix "baseline" $align }}
+      {{ $alignself = "baseline" }}
+    {{ else if hasPrefix "stretch" $align }}
+      {{ $alignself = "stretch" }}
+    {{ else }}
+      {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $alignself }}
+    {{ end }}
+  {{ end }}
 
   {{/* height overrides size */}}
   {{/* height-limited row needs a lot of work -- e.g. non-px suffixes */}}
@@ -289,8 +312,8 @@
     {{/* FIXME probably not needed because it's already the exact size we want  $imgcss = (printf "height: %s;" .height) */}}
   {{- else -}}
     {{/* $figcss = (printf "margin: 0; flex: 0 0 auto; %s" $imagewidthstring) NO!! no flex in the figure */}}
-    {{- $figcss = (printf "margin: 0; %s" $imagewidthstring) -}}
-    {{- $figclass = "mx-2" -}}
+    {{- $figcss = (printf "%s" $imagewidthstring) -}}
+    {{/* ??? - $figclass = "mx-2" - */}}
   {{- end -}}
   {{/* warnf "fs figcss=%s  figclass=%s  imgcss=%s  \n" $figcss $figclass $imgcss */}}
 
@@ -315,7 +338,7 @@
 
     {{/* Use default image for href in case the clever JS doesn't work */}}
     {{/* NOTE either data-remote or href gets used for the image to display */}}
-    {{- $figcss = "margin: 0; " -}}
+    {{- $figcss = "" -}}
     {{- $figclass = "" -}}
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{/* warnf "simple link" */}}
@@ -327,9 +350,9 @@
     {{- $link = false -}}
   {{- end -}}
 
-  {{ $figcss = printf "%s; display: table;" $figcss }}
-  {{ $imgcss = printf "%s; display: table-cell;" $figcss }}
-  {{ $capcss := "display: table-caption; caption-side: bottom;" }}
+  {{ $figcss = printf "%s; align-self: %s;" $figcss $alignself }}
+  {{ $imgcss = printf "%s; " $imgcss }}
+  {{ $capcss := "" }}
 
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>

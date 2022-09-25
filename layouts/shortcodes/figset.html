@@ -26,6 +26,7 @@
     class
     id
     figsetclass - from figrow
+    align - simplified values for use as align-self  
 
   e.g.  {{< figset name="barnowl.jpg" caption="Owl on a post" alt="photo" >}}
 
@@ -54,10 +55,11 @@
 {{ $url      := .Get "url"      | default ($p.Get "url")      }}
 {{ $gallery  := .Get "gallery"  | default ($p.Get "gallery")  }}
 {{ $lightbox := .Get "lightbox" | default ($p.Get "lightbox") }}
+{{ $align    := .Get "align"    | default ($p.Get "align")    }}
 {{/* class1 from figrow parent can be overridden or supplemented by class2 from figset */}}
 {{ $class1   := $p.Get "figsetclass" }}
 {{ $class2   := .Get "class" }}
 {{ $id       := .Get "id" }}
 
-{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "selfsize" $selfsize  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "class1" $class1  "class2" $class2  "id" $id  "figrow" $figrow ) }}
+{{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "selfsize" $selfsize  "title" $title  "caption" $caption  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "align" $align  "class1" $class1  "class2" $class2  "id" $id  "figrow" $figrow ) }}
 

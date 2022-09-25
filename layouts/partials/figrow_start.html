@@ -43,50 +43,24 @@
 {{ $class := .class }}
 {{ $figsetclass := .figsetclass }}
 
-{{/* Parameters and defaults NO -- see above */}}
-{{/* 
-{{ $justify := lower .justify | default "space-around" }}
-{{ $valign  := lower .align  | default "flex-start" }}
-
-{{ $justify2 := $justify }}
-{{ if hasPrefix $justify "flex-" }}
-  {{ $justify2 = substr $justify 5 }}
-{{ else if hasPrefix $justify "space-" }}
-  {{ $justify2 = substr $justify 6 }}
-{{ end }}
-{{ if or (hasPrefix "left" $justify2) (hasPrefix "start" $justify2) }}
-  {{ $justify2 = "start" }}  
-{{ else if or (hasPrefix "right" $justify2) (hasPrefix "end" $justify2) }}
-  {{ $justify2 = "end" }}  
-{{ else if or (hasPrefix "centre" $justify2) (hasPrefix "centre" $justify2) }}
-  {{ $justify2 = "center" }}
-{{ else if (hasPrefix "around" $justify2) }}
-  {{ $justify2 = "space-around" }}
-{{ else if (hasPrefix "between" $justify2) }}
-  {{ $justify2 = "space-between" }}
-{{ else if (hasPrefix "evenly" $justify2) }}
-  {{ $justify2 = "space-evenly" }}
+{{/* FIXME could do all this with classes   e.g. if j is start, class = 'figrow-center', etc....   then user-specified class goes after.  same for align */}}
+{{ $justifycontent := "center" }}{{/* default */}}
+{{ if hasPrefix "start" $justify }}
+  {{ $justifycontent = "flex-start" }}  
+{{ else if hasPrefix "end" $justify }}{{/* FIXME? 'e' will match 'end', not 'evenly' */}}
+  {{ $justifycontent = "flex-end" }}  
+{{ else if or (hasPrefix "center" $justify) (hasPrefix "centre" $justify) }}
+  {{ $justifycontent = "center" }}
+{{ else if hasPrefix "around" $justify }}
+  {{ $justifycontent = "space-around" }}
+{{ else if hasPrefix "between" $justify }}
+  {{ $justifycontent = "space-between" }}
+{{ else if hasPrefix "evenly" $justify }}
+  {{ $justifycontent = "space-evenly" }}
 {{ else }}
-  {{ warnf "figrow: invalid justify value '%s'; using 'center'" $justify }}
-  {{ $justify2 = "center" }}
+  {{ warnf "figrow: invalid justify value '%s'; using '%s'" $justify $justifycontent }}
 {{ end }}
 
-{{ $valign2 := $valign }}
-*/}}
-
-{{/* There are too many options to extract into classes -- just use them directly 
-{{ $alignclass := "figrow-align-default" }}
-{{ if eq $align "center" }}
-  {{ $alignclass = "figrow-align-center" }}
-{{ else if eq $align "stretch" }}
-  {{ $alignclass = "figrow-align-stretch" }}
-{{ end }}
-*/}}
-
-<p clear=both>> figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
-
-{{/* TODO could do this the bootstrap way e.g. d-flex */}}
-{{/* NOTE Don't use safeCSS here because it isn't (because we haven't validated it) -- Hugo will replace naughty CSS values with ZgotmplZ */}}
-<div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $class }}" style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $align }}; ">
+<div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $class }}" style="justify-content: {{ $justifycontent | safeCSS }};">
 
 {{/* The end of the div is in partials/figrow_end.html */}}
