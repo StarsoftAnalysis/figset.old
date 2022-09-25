@@ -2,7 +2,7 @@
 
   Parameters: -- see partials/figrow_start.html
     * justify - values as for CSS's justify-content
-    * align - values as for CSS's align-items
+    * align - values as for CSS's align-items -- there are lots!
     * clear - if true, adds a clear=both after the figrow.
   NOTE Other figset options can be set for figrow and will be used in figset
   e.g. {{< figrow size=large >}}{{ figset name="x.png" }}{{ figset name="y.jpg" size=small }}...
@@ -12,18 +12,16 @@
 */}}
 
 {{/* Get parameters and apply defaults */}}
-{{/* not needed if no default to supply.   or should the partial do the defaults?  Yes.  */}} 
-{{/* 
-{{ $gallery := .Get "gallery" }}
-{{ $height  := .Get "height"  }}
-*/}}
-{{ $justify := .Get "justify" }}
-{{ $align   := .Get "align" }}
-{{ $clear   := .Get "clear" }}
+{{ $justify     := .Get "justify" }}
+{{ $align       := .Get "align" }}
+{{ $clear       := .Get "clear" }}
+{{ $id          := .Get "id" }}
+{{ $class       := .Get "class" }}
+{{ $figsetclass := .Get "figsetclass" }}
 
 {{/* We DON'T need to deal with parameters used by figset via its .Parent -- the shortcode mechanism handles that automatically. */}}
 
-{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "justify" $justify  "align" $align) }}
+{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "justify" $justify  "align" $align  "id" $id  "class" $class  "figsetclass" $figsetclass) }}
   {{ with .Inner }}{{ . }}{{ end }}
 {{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear) }}
 

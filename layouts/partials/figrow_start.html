@@ -21,6 +21,10 @@
       - center or baseline are probably best with captions ; flex-start (aka top) is good too.
       - flex-end (bottom) with captions makes the bottoms of the images uneven -- use baseline instead.
       - stretch moves the caption away from the image-- least desirable
+      !! TODO maybe use bootstrap classes, or emulate its simplified set of values !!    classes, because they have responsive variants!!
+        -- separate for justify and align, because we want to look at the justify thing to tweak caption and image alignment
+           -- but perhaps CSS can handle that e.g.  figcaption within a ..justify-content-center would have text-align:center
+         Oh! -- BS doesn't have -evenly  
   Other parameters supplied by the figrow shortcode are accessed by the 
   figset shortcode via its .Parent.  They are not error-checked here.
 
@@ -33,8 +37,11 @@
 
 */}}
 
-{{ $justify := .justify }}
-{{ $align   := .align   }}
+{{ $justify := lower .justify }}
+{{ $align   := lower .align   }}
+{{ $id := .id }}
+{{ $class := .class }}
+{{ $figsetclass := .figsetclass }}
 
 {{/* Parameters and defaults NO -- see above */}}
 {{/* 
@@ -67,10 +74,19 @@
 {{ $valign2 := $valign }}
 */}}
 
+{{/* There are too many options to extract into classes -- just use them directly 
+{{ $alignclass := "figrow-align-default" }}
+{{ if eq $align "center" }}
+  {{ $alignclass = "figrow-align-center" }}
+{{ else if eq $align "stretch" }}
+  {{ $alignclass = "figrow-align-stretch" }}
+{{ end }}
+*/}}
+
 <p clear=both>> figrow_start: justify="{{ $justify }}" align="{{ $align }}"</p>
 
 {{/* TODO could do this the bootstrap way e.g. d-flex */}}
 {{/* NOTE Don't use safeCSS here because it isn't (because we haven't validated it) -- Hugo will replace naughty CSS values with ZgotmplZ */}}
-<div class=figrow style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $align }}; ">
+<div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $class }}" style="margin: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: {{ $justify }}; align-items: {{ $align }}; ">
 
 {{/* The end of the div is in partials/figrow_end.html */}}

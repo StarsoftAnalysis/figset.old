@@ -71,6 +71,12 @@ blockquote {
 //		margin: 0 3vw 3vw;
 //	}
 }
+/* wrong:
+.figrow-align-center { align-items: center }
+.figrow-align-stretch { align-items: stretch }
+.figrow-align-default { align-items: center } // default
+*/
+
 figure.figset {
 	display: inline-table;
 	figcaption {
@@ -78,6 +84,9 @@ figure.figset {
 		caption-side: bottom;
 	}
 }
+// testing:
+.fred { color: red; }
+#fblue { color: blue; }
 
 // Use Stardos Stencil font for main headings and submit buttons
 h1, h2, nav a, input[type=submit] {

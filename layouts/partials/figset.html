@@ -58,7 +58,9 @@
             -- if %, can calculate width as % (of container) and then estimate sizes as vw -- or maybe just specify sizes as vh
             -- if px, calculate width as px, then need to do media things for sizes, copying transitions from those used for bootstrap
             -- if em, depends on font size, so maybe don't handle that.  Or assume 16px
-
+    .class1 -- classes from parent figrow
+    .class2 -- classes for this figset
+    .id     -- id of this figset
 
 */}}
 
@@ -89,6 +91,9 @@
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
+{{- $class1 := .class1 -}}
+{{- $class2 := .class2 -}}
+{{- $id := .id -}}
 
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
@@ -327,7 +332,7 @@
   {{ $capcss := "display: table-caption; caption-side: bottom;" }}
 
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
-  <figure class="xfigure figset {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
   <img loading=lazy class="ximg-fluid xxmx-2 xborder xborder-primary"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
