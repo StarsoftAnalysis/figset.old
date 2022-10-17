@@ -6,6 +6,7 @@
 
   TODO:
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
+  * FIXME: imagewidthstring only used with height, and it's not needed then
   * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
@@ -20,6 +21,11 @@
     the caption fit the width of the picture.
   * try height with vw units...
   * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
+  * caption alignment -- need to match figrow's justify?   or does figset have a justify too?
+  * default align-self to start if height
+  * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
+     ... overlay (for watermark/logo)
+     ... see https://gohugo.io/functions/images/#text
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -28,6 +34,7 @@
      - e.g. poses l, c, r  pushes third one to next line.
   * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
   * NO: could do a percentage if we knew how many are in the row (can the parent tell us?)
+  * Move anchor inside figure
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -219,7 +226,7 @@
       {{/* See [image] section of config.toml for image processing options */}}
       {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
     {{- end -}}
-    {{/* warnf "fs(h): heightval=%v hunit=%s imagewidth=%v imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes */}}
+    {{ warnf "fs(h): heightval=%v hunit=%s imagewidth=%v imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes }}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
     {{- end -}}
@@ -304,8 +311,8 @@
 
   {{/* height, if any, is set via figrow shortcode (parent) */}}
   {{/* figure needs to be same width as img, otherwise it's too wide to allow any text flow */}}
-  {{- $figcss := "" -}}{{/* CSS for figure, or its enclosing 'a' FIXME rename it */}}
-  {{- $figclass := "" -}}{{/* classes for figure, or its enclosing 'a' FIXME rename it */}}
+  {{- $figcss := "" -}}{{/* CSS for figure, or its enclosing 'a' */}}
+  {{- $figclass := "" -}}{{/* classes for figure, or its enclosing 'a' */}}
   {{- $imgcss := "" -}}
   {{- if .height -}}
     {{/* $figcss = (printf "margin: 0; width: %q;" $imagewidthstring) */}}{{/* FIXME but if .height specified, we're not using $imagewidth -- need to use ... */}}
@@ -317,8 +324,8 @@
   {{- end -}}
   {{/* warnf "fs figcss=%s  figclass=%s  imgcss=%s  \n" $figcss $figclass $imgcss */}}
 
+  {{- $anchor := "" -}}
   {{- $link := true -}}
-  {{- $dataurlstring := "" -}}
   {{- if $lightboxstring -}}
     {{/* warnf "lbs is not empty..." */}}
     {{/* TODO maybe -- let the JS extract the image url/name from the fig */}}
@@ -342,7 +349,9 @@
     {{- $figclass = "" -}}
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{/* warnf "simple link" */}}
-    <a href="{{ $url }}" class="{{ $figclass }}" style="display: block; {{ $figcss | safeCSS }}">
+    {{/* <a> will go inside the <figure> later */}}
+    {{ $anchor = printf "<a href=\"%s\" class=\"%s\" style=\"display: block; %s \">" $url $figclass ($figcss | safeCSS) }}
+    {{/* clear figcss and figclass 'cos we've already used them */}}
     {{- $figcss = "" -}}
     {{- $figclass = "" -}}
   {{- else -}}
@@ -356,6 +365,7 @@
 
   {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <img loading=lazy class="ximg-fluid xxmx-2 xborder xborder-primary"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
@@ -377,9 +387,7 @@
   <figcaption xclass=figure-caption style="{{ $capcss | safeCSS }}">{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
   </figure>
-  {{- if $link -}}
-    </a>
-  {{- end -}}
+  {{- if $anchor -}}</a>{{- end -}}
 
 {{- else -}}
 [image '{{ $name }}' not found]
