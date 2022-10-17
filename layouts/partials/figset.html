@@ -6,7 +6,6 @@
 
   TODO:
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
-  * FIXME: imagewidthstring only used with height, and it's not needed then
   * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
@@ -35,6 +34,7 @@
   * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
   * NO: could do a percentage if we knew how many are in the row (can the parent tell us?)
   * Move anchor inside figure
+  * FIXME: imagewidthstring only used with height, and it's not needed then
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -126,8 +126,6 @@
   {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
   {{- $imagelist := slice -}}{{/* empty slice */}}
-  {{- $imagewidth := 0 -}}
-  {{- $imagewidthstring := "" -}}
   {{- $imagemargincss := "" -}}
   {{- $posclass := "" -}}
   {{- $sizes := "" -}}
@@ -215,8 +213,6 @@
     {{- else -}}
       {{- $heightval = int $height -}}{{/* FIXME this will give an error with any unknown suffix */}}
     {{- end -}}
-    {{- $imagewidth = (mul $heightval $aspect) -}}
-    {{- $imagewidthstring = (printf "width: %dpx;" (int $imagewidth)) -}}
     {{- if gt $heightval $origheight -}}
       {{/* don't want to expand image, so give it a top/bottom margin */}}
       {{- $imagemargincss = printf "margin: %fpx 0; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) -}}
@@ -226,7 +222,7 @@
       {{/* See [image] section of config.toml for image processing options */}}
       {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
     {{- end -}}
-    {{ warnf "fs(h): heightval=%v hunit=%s imagewidth=%v imagelist=%v iwidth=%v iwstring=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagewidth $imagelist $imagewidth $imagewidthstring $imagemargincss $posclass $sizes }}
+    {{ warnf "fs(h): heightval=%v hunit=%s imagelist=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagelist $imagemargincss $posclass $sizes }}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
     {{- end -}}
@@ -296,8 +292,6 @@
 
   {{- end -}}{{/* else, not $height */}}
 
-  {{/* warnf "fs: title=%s h=%v iw=%v aspect=%.2f iw/aspect=%.2f area=%v imcss=%s\n" $title .height (int $imagewidth) $aspect (div $imagewidth $aspect) (int (mul $imagewidth (div $imagewidth $aspect))) $imagemargincss */}}
-  
   {{- $defaultimage := index $imagelist 0 -}}{{/* Just use the first, i.e. largest */}}
 
   {{- $lightboxstring := "" -}}
@@ -308,21 +302,6 @@
     {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
   {{- end -}}
   {{/* warnf "fs: lbstring=%s  gallery=%s\n" $lightboxstring $gallery */}}
-
-  {{/* height, if any, is set via figrow shortcode (parent) */}}
-  {{/* figure needs to be same width as img, otherwise it's too wide to allow any text flow */}}
-  {{- $figcss := "" -}}{{/* CSS for figure, or its enclosing 'a' */}}
-  {{- $figclass := "" -}}{{/* classes for figure, or its enclosing 'a' */}}
-  {{- $imgcss := "" -}}
-  {{- if .height -}}
-    {{/* $figcss = (printf "margin: 0; width: %q;" $imagewidthstring) */}}{{/* FIXME but if .height specified, we're not using $imagewidth -- need to use ... */}}
-    {{/* FIXME probably not needed because it's already the exact size we want  $imgcss = (printf "height: %s;" .height) */}}
-  {{- else -}}
-    {{/* $figcss = (printf "margin: 0; flex: 0 0 auto; %s" $imagewidthstring) NO!! no flex in the figure */}}
-    {{- $figcss = (printf "%s" $imagewidthstring) -}}
-    {{/* ??? - $figclass = "mx-2" - */}}
-  {{- end -}}
-  {{/* warnf "fs figcss=%s  figclass=%s  imgcss=%s  \n" $figcss $figclass $imgcss */}}
 
   {{- $anchor := "" -}}
   {{- $link := true -}}
@@ -345,26 +324,21 @@
 
     {{/* Use default image for href in case the clever JS doesn't work */}}
     {{/* NOTE either data-remote or href gets used for the image to display */}}
-    {{- $figcss = "" -}}
-    {{- $figclass = "" -}}
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{/* warnf "simple link" */}}
-    {{/* <a> will go inside the <figure> later */}}
-    {{ $anchor = printf "<a href=\"%s\" class=\"%s\" style=\"display: block; %s \">" $url $figclass ($figcss | safeCSS) }}
+    {{/* anchor will go inside the figure later */}}
+    {{ $anchor = printf "<a href=\"%s\" style=\"display: block;\">" $url }}
     {{/* clear figcss and figclass 'cos we've already used them */}}
-    {{- $figcss = "" -}}
-    {{- $figclass = "" -}}
   {{- else -}}
     {{/* warnf "no link" */}}
     {{- $link = false -}}
   {{- end -}}
 
-  {{ $figcss = printf "%s; align-self: %s;" $figcss $alignself }}
-  {{ $imgcss = printf "%s; " $imgcss }}
+  {{ $figcss := printf "align-self: %s;" $alignself }}
   {{ $capcss := "" }}
 
-  {{/* warnf "figclass='%s' posclass='%s' lightboxstring='%s'" $figclass $posclass $lightboxstring */}}
-  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $figclass }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  {{/* warnf "posclass='%s' lightboxstring='%s'" $posclass $lightboxstring */}}
+  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <img loading=lazy class="ximg-fluid xxmx-2 xborder xborder-primary"
     {{/* Only include srcset if there is more than one */}}
@@ -380,7 +354,7 @@
     {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"  { { /* see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}
     {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
-    style="{{ $imgcss | safeCSS }} {{ $imagemargincss | safeCSS }}" {{/* 100% of figure                   .already done with img-fluid: max-width: 100%; height: auto; */}}
+    style="{{ $imagemargincss | safeCSS }}" {{/* 100% of figure                   .already done with img-fluid: max-width: 100%; height: auto; */}}
     {{/* object-fit: contain; ??? */}}
   >
   {{- if $caption -}}
