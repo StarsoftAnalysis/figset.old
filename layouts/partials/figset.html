@@ -35,6 +35,7 @@
   * NO: could do a percentage if we knew how many are in the row (can the parent tell us?)
   * Move anchor inside figure
   * FIXME: imagewidthstring only used with height, and it's not needed then
+  * 'clear' option for figset (as done for figrow) -- see type2 test.
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -101,6 +102,7 @@
 {{- $class1 := .class1 -}}
 {{- $class2 := .class2 -}}
 {{- $id := .id -}}
+{{- $clear := .clear | default "none" -}}
 
 {{/* Some things only apply within a figrow (and vice versa) */}}
 {{ if $figrow }}
@@ -365,4 +367,8 @@
 
 {{- else -}}
 [image '{{ $name }}' not found]
+{{- end -}}
+{{ warnf "image=%s   clear='%s'" $image $clear }}
+{{- if ne $clear "none" -}}
+<div style="clear: {{ $clear }};"></div>
 {{- end -}}

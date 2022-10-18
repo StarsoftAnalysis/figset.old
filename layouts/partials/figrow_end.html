@@ -1,10 +1,6 @@
-{{/* FIXME an option for clear=both -- */}}
-
 {{/* The beginning of the div is in partials/figrow_start.html */}}
-
 </div>
-
-{{ $clear := .clear | default true }}
-{{ if $clear }}
-  <div clear=both></div>
-{{ end }}
+{{- $clear := .clear | default "both" -}}
+{{- if $clear -}}
+  <div style="clear: {{ $clear }};"></div>
+{{- end -}}

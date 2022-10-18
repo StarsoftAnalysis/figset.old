@@ -3,9 +3,8 @@
 <h1>{{ .Title }}</h1>
 <p>layouts/type2/single.html
 
-<p>Figset partial:
-{{ partial "figset.html" (dict "page" .Page   "name" "figsetimage.png"  "position" "left"  "size" "small"  "caption" "Look at that" ) }}
-
+<p>Figset partial with a clear:
+{{ partial "figset.html" (dict "page" .Page   "name" "https://picsum.photos/200/300"  "position" "left"  "size" "small"  "caption" "clear=both"  "clear" "both" ) }}
 
 <p>Figrow partial:
 {{ partial "figrow_start.html" (dict  "page" .Page ) }}

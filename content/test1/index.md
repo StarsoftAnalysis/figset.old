@@ -16,7 +16,7 @@ Blurb before three figsets not in a figrow:
 
 {{<figset name="img20220824_095038_DRO-800.jpg" size=small url=self caption="url=self" position=l >}}
 {{<figset image="img20220824_105444_DRO-800.jpg" size=small height=100 caption="height=100"  position=c >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small height=200 url=self caption="url=self height=200" position=r >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
 Blurb between row of three and single figset. No size:
 
