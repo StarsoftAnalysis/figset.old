@@ -5,7 +5,7 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
-  * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
+  * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
   * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
@@ -36,6 +36,7 @@
   * Move anchor inside figure
   * FIXME: imagewidthstring only used with height, and it's not needed then
   * 'clear' option for figset (as done for figrow) -- see type2 test.
+  * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -175,19 +176,14 @@
     {{- end -}}
   {{- end -}}
 
-  {{/* align-self: default centre, or baseline with a caption */}}
-  {{ $alignself := "center" }}
-  {{/* different default if there's a caption messes up a row where only some have captions:
-  {{ if $caption }}
-    {{ $alignself = "baseline" }}
-  {{ end }}
-  */}}
-  {{ if $align }}
+  {{/* align-self: only within a figrow */}}
+  {{ $alignself := "" }}
+  {{ if $figrow }}
     {{ if hasPrefix "start" $align }}
-      {{ $alignself = "start" }}
+      {{ $alignself = "flex-start" }}
     {{ else if hasPrefix "end" $align }}
-      {{ $alignself = "end" }}
-    {{ else if or (hasPrefix "centre" $align) (hasPrefix "centre" $align) }}
+      {{ $alignself = "flex-end" }}
+    {{ else if or (hasPrefix "center" $align) (hasPrefix "centre" $align) }}
       {{ $alignself = "center" }}
     {{ else if hasPrefix "baseline" $align }}
       {{ $alignself = "baseline" }}
@@ -195,7 +191,9 @@
       {{ $alignself = "stretch" }}
     {{ else }}
       {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $alignself }}
+      {{ $alignself = "center" }}
     {{ end }}
+    {{ $alignself = printf "align-self: %s;" $alignself }}
   {{ end }}
 
   {{/* height overrides size */}}
@@ -336,7 +334,10 @@
     {{- $link = false -}}
   {{- end -}}
 
-  {{ $figcss := printf "align-self: %s;" $alignself }}
+  {{ $figcss := "" }}
+  {{ with $alignself }}
+    {{ $figcss = $alignself }}
+  {{ end }}
   {{ $capcss := "" }}
 
   {{/* warnf "posclass='%s' lightboxstring='%s'" $posclass $lightboxstring */}}
