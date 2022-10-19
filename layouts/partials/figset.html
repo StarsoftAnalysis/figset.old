@@ -5,8 +5,8 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
+  * add captions in lightbox
   * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
-  * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
   * margin:0 for figures -- check that this is OK in all cases. - maybe only in figrow
@@ -21,10 +21,10 @@
   * try height with vw units...
   * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
   * caption alignment -- need to match figrow's justify?   or does figset have a justify too?
-  * default align-self to start if height
   * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
+  * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -37,6 +37,7 @@
   * FIXME: imagewidthstring only used with height, and it's not needed then
   * 'clear' option for figset (as done for figrow) -- see type2 test.
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
+  * default align-self to start if height
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -99,7 +100,7 @@
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
-{{- $align := lower .align }}
+{{- $align := lower .align }}{{/* See below for default */}}
 {{- $class1 := .class1 -}}
 {{- $class2 := .class2 -}}
 {{- $id := .id -}}
@@ -179,19 +180,26 @@
   {{/* align-self: only within a figrow */}}
   {{ $alignself := "" }}
   {{ if $figrow }}
-    {{ if hasPrefix "start" $align }}
-      {{ $alignself = "flex-start" }}
-    {{ else if hasPrefix "end" $align }}
-      {{ $alignself = "flex-end" }}
-    {{ else if or (hasPrefix "center" $align) (hasPrefix "centre" $align) }}
-      {{ $alignself = "center" }}
-    {{ else if hasPrefix "baseline" $align }}
-      {{ $alignself = "baseline" }}
-    {{ else if hasPrefix "stretch" $align }}
-      {{ $alignself = "stretch" }}
-    {{ else }}
-      {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $alignself }}
-      {{ $alignself = "center" }}
+    {{ if $align }}
+      {{ if or (hasPrefix "start" $align) (eq $align "flex-end") }}
+        {{ $alignself = "flex-start" }}
+      {{ else if or (hasPrefix "end" $align) (eq $align "flex-start") }}
+        {{ $alignself = "flex-end" }}
+      {{ else if or (hasPrefix "center" $align) (hasPrefix "centre" $align) }}
+        {{ $alignself = "center" }}
+      {{ else if hasPrefix "baseline" $align }}
+        {{ $alignself = "baseline" }}
+      {{ else if hasPrefix "stretch" $align }}
+        {{ $alignself = "stretch" }}
+      {{ end }}
+    {{ end }}
+    {{ if not $alignself }}
+      {{ $dft_as := "center" }}
+      {{ if $height }}
+        {{ $dft_as = "flex-start" }}
+      {{ end }}
+      {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $dft_as }}
+      {{ $alignself = $dft_as }}
     {{ end }}
     {{ $alignself = printf "align-self: %s;" $alignself }}
   {{ end }}
