@@ -58,16 +58,16 @@
 {{/* FIXME we do resources.Get twice here */}}
 {{/* See below re why we're not testing this at the moment   FIXME 
 {{ if .Params.lightboxSSA */}}
-  {{ $lightboxSSAjs := resources.Get "lib/lightboxssa/src/js/lightboxSSA.js" }}
+  {{ $lightboxSSAjs := resources.Get "lib/lightboxSSA/src/js/lightboxSSA.js" }}
   {{ if not $lightboxSSAjs }}
     {{ warnf "Failed to load lightboxSSA js" }}
   {{ else }}
     {{ $jsbOpts := merge $jsbDftOpts (dict "targetPath" "js/lightboxSSA.js") }}
     {{ if .Site.IsServer }}
-      {{ $js := resources.Get "lib/lightboxssa/src/js/lightboxSSA.js" | js.Build $jsbOpts }}
+      {{ $js := resources.Get "lib/lightboxSSA/src/js/lightboxSSA.js" | js.Build $jsbOpts }}
       <script src="{{ $js.RelPermalink }}" defer></script>
     {{ else }}{{/* 'production' */}}
-      {{ $js := resources.Get "lib/lightboxssa/src/js/lightboxSSA.js" | js.Build $jsbOpts | fingerprint }}
+      {{ $js := resources.Get "lib/lightboxSSA/src/js/lightboxSSA.js" | js.Build $jsbOpts | fingerprint }}
       <script src="{{ $js.RelPermalink }}" defer integrity="{{ $js.Data.Integrity }}"></script>
     {{ end }}
   {{ end }}
@@ -118,7 +118,7 @@
 
 {{/* FIXME can't work out how to set a variable for testing here from a template (e.g. from layouts/catshowcase/single.html), so for now we'll include lbssa on ALL pages */}}
 {{/* if .Params.lightboxSSA */}}
-  {{ $lightboxSSAscss := resources.Get "lib/lightboxssa/src/css/lightboxSSA.scss" }}
+  {{ $lightboxSSAscss := resources.Get "lib/lightboxSSA/src/css/lightboxSSA.scss" }}
   {{ if not $lightboxSSAscss }}
     {{ errorf "Failed to load lightboxSSA SCSS" }}
   {{ else }}
