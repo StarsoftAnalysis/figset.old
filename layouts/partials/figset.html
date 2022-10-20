@@ -6,6 +6,8 @@
 
   TODO:
   * add captions in lightbox
+  * add captionclass ?
+  * Use separate file for calcs??
   * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
@@ -89,7 +91,7 @@
 {{ end }}
 
 {{/* carry on with parameters and defaults */}}
-{{- $position := lower .position | default "left" -}}
+{{- $position := lower .position -}}{{/* See below for default */}}
 {{- $size := lower .size | default "medium" -}}
 {{- $selfsize := (int (.selfsize | default 2000)) -}}
 {{- $maxwidth := (int (.maxwidth | default 2000)) -}}
@@ -198,7 +200,9 @@
       {{ if $height }}
         {{ $dft_as = "flex-start" }}
       {{ end }}
-      {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $dft_as }}
+      {{ if $align }}
+        {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $dft_as }}
+      {{ end }}
       {{ $alignself = $dft_as }}
     {{ end }}
     {{ $alignself = printf "align-self: %s;" $alignself }}
@@ -230,7 +234,7 @@
       {{/* See [image] section of config.toml for image processing options */}}
       {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
     {{- end -}}
-    {{ warnf "fs(h): heightval=%v hunit=%s imagelist=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagelist $imagemargincss $posclass $sizes }}
+    {{/* warnf "fs(h): heightval=%v hunit=%s imagelist=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagelist $imagemargincss $posclass $sizes */}}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
     {{- end -}}
@@ -377,7 +381,7 @@
 {{- else -}}
 [image '{{ $name }}' not found]
 {{- end -}}
-{{ warnf "image=%s   clear='%s'" $image $clear }}
+
 {{- if ne $clear "none" -}}
 <div style="clear: {{ $clear }};"></div>
 {{- end -}}

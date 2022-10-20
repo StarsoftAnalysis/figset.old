@@ -22,10 +22,11 @@ div.figrow {
 */
 
 figure.figset {
-  margin: 0 2vw 2vw;
-	display: inline-table;
-	figcaption {
-		//display: table-cell;
-		caption-side: bottom;
-	}
+  margin: 0 2vw 2vw; // maybe should be 0 on narrow screens
+  //? gets overridden within a row    display: inline-table;
+  figcaption {
+    //display: table-cell;
+    caption-side: bottom;
+  }
+  img { max-width: 100% }
 }
