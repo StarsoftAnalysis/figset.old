@@ -351,7 +351,7 @@
   {{/* warnf "posclass='%s' lightboxstring='%s'" $posclass $lightboxstring */}}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
-  <img loading=lazy class="ximg-fluid xxmx-2 xborder xborder-primary"
+  <img loading=lazy class=""
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
       srcset="
