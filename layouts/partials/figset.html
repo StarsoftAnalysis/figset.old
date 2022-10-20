@@ -316,7 +316,6 @@
   {{/* warnf "fs: lbstring=%s  gallery=%s\n" $lightboxstring $gallery */}}
 
   {{- $anchor := "" -}}
-  {{- $link := true -}}
   {{- if $lightboxstring -}}
     {{/* warnf "lbs is not empty..." */}}
     {{/* TODO maybe -- let the JS extract the image url/name from the fig */}}
@@ -341,9 +340,6 @@
     {{/* anchor will go inside the figure later */}}
     {{ $anchor = printf "<a href=\"%s\" style=\"display: block;\">" $url }}
     {{/* clear figcss and figclass 'cos we've already used them */}}
-  {{- else -}}
-    {{/* warnf "no link" */}}
-    {{- $link = false -}}
   {{- end -}}
 
   {{ $figcss := "" }}
