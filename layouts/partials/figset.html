@@ -5,6 +5,7 @@
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
   TODO:
+  * option to clear before rather than after?
   * add captions in lightbox
   * add captionclass ?
   * Use separate file for calcs??
@@ -166,12 +167,10 @@
   {{ else }}
     {{/* position: left/start | right/end | centre/center -- can be abbreviated. */}}
     {{- if or (hasPrefix "left" $position) (hasPrefix "start" $position) -}}
-      {{/* need e.g. text-right for figure, float-right for img NO! */}}
-      {{- $posclass = "float-start mr-3" -}}
+      {{- $posclass = "float-start ms-0" -}}
     {{- else if or (hasPrefix "right" $position) (hasPrefix "end" $position) -}}
-      {{- $posclass = "float-end ml-3" -}}
+      {{- $posclass = "float-end me-0" -}}
     {{- else if or (hasPrefix "centre" $position) (hasPrefix "center" $position) -}}
-      {{/* FIXME? use text-center in enclosing div instead of "m-auto d-block" to center img */}}
       {{- $posclass = "mx-auto d-block" -}}
     {{- else -}}
       {{- warnf "figset: invalid position '%s' for image %v -- using 'centre'" $position $image -}}
@@ -339,12 +338,11 @@
     {{/* warnf "simple link" */}}
     {{/* anchor will go inside the figure later */}}
     {{ $anchor = printf "<a href=\"%s\" style=\"display: block;\">" $url }}
-    {{/* clear figcss and figclass 'cos we've already used them */}}
   {{- end -}}
 
-  {{ $figcss := "" }}
+  {{ $figcss := "width: fit-content; " }}
   {{ with $alignself }}
-    {{ $figcss = $alignself }}
+    {{ $figcss = printf "%s %s" $figcss $alignself }}
   {{ end }}
   {{ $capcss := "" }}
 

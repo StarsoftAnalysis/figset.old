@@ -18,9 +18,41 @@ Blurb before three figsets not in a figrow:
 {{<figset image="img20220824_105444_DRO-800.jpg" size=small height=100 caption="height=100"  position=c >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
-Blurb between row of three and single figset. No size:
+Blurb between row of three and single figset. On left with wrapped text.
 
-{{<figset name="img20220826_105417_DRO-800.jpg" position=c  >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
+
+So shaken as we are...
+So shaken as we are...
+So shaken as we are...
+So shaken as we are...
+So shaken as we are...
+
+So shaken as we are...
+
+So shaken as we are...
+
+So shaken as we are...
+
+So shaken as we are...
+
+
+#### On right with wrapped text.
+
+{{<figset name="img20220826_105417_DRO-800.jpg" position=r size=small  >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=r size=small  >}}
+
+So shaken as we are...
+
+#### Centred
+
+So shaken as we are...
+
+{{<figset name="img20220826_105417_DRO-800.jpg" position=c size=small  >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=c size=small  >}}
+
+So shaken as we are...
 
 Blurb after figset, before head2.
 
