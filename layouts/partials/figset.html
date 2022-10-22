@@ -9,10 +9,8 @@
   * add captions in lightbox
   * add captionclass ?
   * Use separate file for calcs??
-  * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-  * margin:0 for figures -- check that this is OK in all cases. - maybe only in figrow
   * get rid of bootstrap or use it properly -- via external CSS
   * decouple from lightboxSSA to allow use of other lightboxes??
   * selfsize to limit size of expanded image, e.g. if not in a gallery
@@ -41,6 +39,7 @@
   * 'clear' option for figset (as done for figrow) -- see type2 test.
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
   * default align-self to start if height
+  * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -54,7 +53,7 @@
     .figrow -- true if we're within a figrow (which is independent of whether there's a gallery)
     .name (of image within the page bundle)
     .image (resource) or name (name of image file in bundle) -- image overrides name
-    .position - left/start, right/end, centre/center
+    .position - left/start, right/end, centre/center -- can be abbreviated.
     .size - thumb, small, medium, large, full  TODO other sizes  FIXME hook into bootstrap sizing
     .maxwidth -- biggest size used for srcset in pixels, or for url=self
     .selfsize -- max size in px of url=self image
@@ -167,14 +166,14 @@
   {{ else }}
     {{/* position: left/start | right/end | centre/center -- can be abbreviated. */}}
     {{- if or (hasPrefix "left" $position) (hasPrefix "start" $position) -}}
-      {{- $posclass = "float-start ms-0" -}}
+      {{- $posclass = "figset-posstart" -}}
     {{- else if or (hasPrefix "right" $position) (hasPrefix "end" $position) -}}
-      {{- $posclass = "float-end me-0" -}}
+      {{- $posclass = "figset-posend" -}}
     {{- else if or (hasPrefix "centre" $position) (hasPrefix "center" $position) -}}
-      {{- $posclass = "mx-auto d-block" -}}
+      {{- $posclass = "figset-poscenter" -}}
     {{- else -}}
       {{- warnf "figset: invalid position '%s' for image %v -- using 'centre'" $position $image -}}
-      {{- $posclass = "mx-auto d-block" -}}
+      {{- $posclass = "figset-poscenter" -}}
     {{- end -}}
   {{- end -}}
 
