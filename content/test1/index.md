@@ -80,3 +80,9 @@ Last figset before footer:
 {{<figrow gallery=test1 clear=false >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
 {{</figrow>}}  
+
+## Testing classes
+{{<figrow gallery=test1 clear=false class="figset-test1" figsetclass="figset-test2" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
+{{</figrow>}}  

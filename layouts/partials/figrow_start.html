@@ -3,62 +3,65 @@
   figrow partial
 
   TODO:
-  * 'wrap' param -- to pass to lightbox.
-  * maybe: use another <figure> around the whole row -- see https://html.spec.whatwg.org/multipage/grouping-content.html#the-figure-element
-  * redo justify and align as classes (figrow-center etc.) rather than directly using user-specified strings as CSS.
+  * 'wrap' param -- to pass to lightbox.  Or are lightbox settings done via the frontmatter??
+  * redo justify as classes (figrow-center etc.) rather than inline style 
 
   Can be called directly, or via the figrow shortcode.
   Note that the shortcode can put more things in the dict to be accessed
   from the figset shortcode: this doesn't work when using the partials directly,
   so common values, e.g. gallery or size, have to be in each invocation of figset.
 
-  Parameters (in the dict/context) -- accept variations on the CSS values:
-    * justify-content - values as for CSS's justify-content
-      - left -- implies caption to left \
-      - right -- caption to right        > caption aligment becomes default for capalign argument to figset.
-      - others -- caption centred       / 
-    * align-items - values as for CSS's align-items
-      - center or baseline are probably best with captions ; flex-start (aka top) is good too.
-      - flex-end (bottom) with captions makes the bottoms of the images uneven -- use baseline instead.
-      - stretch moves the caption away from the image-- least desirable
-      !! TODO maybe use bootstrap classes, or emulate its simplified set of values !!    classes, because they have responsive variants!!
-        -- separate for justify and align, because we want to look at the justify thing to tweak caption and image alignment
-           -- but perhaps CSS can handle that e.g.  figcaption within a ..justify-content-center would have text-align:center
-         Oh! -- BS doesn't have -evenly  
+  Parameters (in the dict/context):
+    * justify - values as for CSS's justify-content
+      Accepts these values:
+        center*|centre* start*|left*|flex-start end*|right*|flex-end around*|space-around between*|space-between evenly*|space-evenly
+      where values with an asterisk can be abbreviated as long as they're not ambiguous.
+    * id - CSS id for the figrow div
+    * class -- CSS class(es) for the figrow div
   Other parameters supplied by the figrow shortcode are accessed by the 
   figset shortcode via its .Parent.  They are not error-checked here.
 
   If from another template (rather than via shortcodes), do this: 
-  (not use of .figrow to tell figset that it's in a row)
-    {{ partial "figrow_start.html" (dict  "page" .Page  "justify-contents" center  "align-items" "top"  "size"  "small"  ...) }}
+  (note use of "figrow true" to tell figset that it's in a row)
+    {{ partial "figrow_start.html" (dict  "page" .Page  "justify-contents" "center"  "align-items" "top"  "size"  "small"  ...) }}
     {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" "foo"  "name" "image1.jpg"  "caption" "a photo"  ...)   }}
     {{ partial "figset.html"       (dict  "page" .Page  "figrow" true  "gallery" "foo"  "name" "image2.jpg"  "caption" "another photo"  ...) }}
     {{ partial "figrow_end.html"   (dict  "page" .Page) }}
 
 */}}
 
-{{ $justify := lower .justify }}
-{{ $align   := lower .align   }}
+{{ $dftj := "center" }}
+{{ $justify := lower .justify | default $dftj }}
 {{ $id := .id }}
 {{ $class := .class }}
-{{ $figsetclass := .figsetclass }}
 
-{{/* FIXME could do all this with classes   e.g. if j is start, class = 'figrow-center', etc....   then user-specified class goes after.  same for align */}}
-{{ $justifycontent := "center" }}{{/* default */}}
-{{ if hasPrefix "start" $justify }}
+{{ $justifycontent := "" }}
+{{ if or (or (hasPrefix "start" $justify) (hasPrefix "left" $justify)) (eq $justify "flex-start") }}
   {{ $justifycontent = "flex-start" }}  
-{{ else if hasPrefix "end" $justify }}{{/* FIXME? 'e' will match 'end', not 'evenly' */}}
+{{ else if or (hasPrefix "right" $justify) (eq $justify "flex-end") }}{{/* "end" is handled below */}}
   {{ $justifycontent = "flex-end" }}  
 {{ else if or (hasPrefix "center" $justify) (hasPrefix "centre" $justify) }}
   {{ $justifycontent = "center" }}
-{{ else if hasPrefix "around" $justify }}
+{{ else if or (hasPrefix "around" $justify) (eq $justify "space-around") }}
   {{ $justifycontent = "space-around" }}
-{{ else if hasPrefix "between" $justify }}
+{{ else if or (hasPrefix "between" $justify) (eq $justify "space-between") }}
   {{ $justifycontent = "space-between" }}
-{{ else if hasPrefix "evenly" $justify }}
+{{ else if eq $justify "space-evenly" }}{{/* "evenly" is handled below */}}
   {{ $justifycontent = "space-evenly" }}
-{{ else }}
-  {{ warnf "figrow: invalid justify value '%s'; using '%s'" $justify $justifycontent }}
+{{ else if hasPrefix $justify "e" }}
+  {{/* Values beginning with "e" -- unique after one letter */}}
+  {{ $justify2 := substr $justify 1 }}
+  {{ if $justify2 }}
+    {{ if hasPrefix "nd" $justify2 }}
+      {{ $justifycontent = "flex-end" }}
+    {{ else if hasPrefix "venly" $justify2 }}
+      {{ $justifycontent = "space-evenly" }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ if not $justifycontent }}
+  {{ warnf "figrow: invalid justify value '%s': using '%s'" $justify $dftj }}
+  {{ $justifycontent = $dftj }}
 {{ end }}
 
 <div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $class }}" style="justify-content: {{ $justifycontent | safeCSS }};">
