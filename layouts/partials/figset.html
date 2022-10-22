@@ -179,32 +179,31 @@
   {{- end -}}
 
   {{/* align-self: only within a figrow */}}
-  {{ $alignself := "" }}
+  {{ $asclass := "" }}
   {{ if $figrow }}
     {{ if $align }}
       {{ if or (hasPrefix "start" $align) (eq $align "flex-end") }}
-        {{ $alignself = "flex-start" }}
+        {{ $asclass = "figset-asstart" }}
       {{ else if or (hasPrefix "end" $align) (eq $align "flex-start") }}
-        {{ $alignself = "flex-end" }}
+        {{ $asclass = "figset-asend" }}
       {{ else if or (hasPrefix "center" $align) (hasPrefix "centre" $align) }}
-        {{ $alignself = "center" }}
+        {{ $asclass = "figset-ascenter" }}
       {{ else if hasPrefix "baseline" $align }}
-        {{ $alignself = "baseline" }}
+        {{ $asclass = "figset-asbaseline" }}
       {{ else if hasPrefix "stretch" $align }}
-        {{ $alignself = "stretch" }}
+        {{ $asclass = "figset-asstretch" }}
       {{ end }}
     {{ end }}
-    {{ if not $alignself }}
-      {{ $dft_as := "center" }}
+    {{ if not $asclass }}
+      {{ $dft_as := "figset-ascenter" }}
       {{ if $height }}
-        {{ $dft_as = "flex-start" }}
+        {{ $dft_as = "figset-astart" }}
       {{ end }}
       {{ if $align }}
         {{ warnf "figset: invalid align value '%s' for image '%v'; using '%s'" $align $image $dft_as }}
       {{ end }}
-      {{ $alignself = $dft_as }}
+      {{ $asclass = $dft_as }}
     {{ end }}
-    {{ $alignself = printf "align-self: %s;" $alignself }}
   {{ end }}
 
   {{/* height overrides size */}}
@@ -332,22 +331,19 @@
       {{- $srcset = $srcset | append (dict "url" $i.RelPermalink "width" $i.Width "height" $i.Height) -}}
     {{- end -}}
 
-    {{/* Use default image for href in case the clever JS doesn't work */}}
+    {{/* FIXME?? Use default image for href in case the clever JS doesn't work */}}
     {{/* NOTE either data-remote or href gets used for the image to display */}}
+
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{/* warnf "simple link" */}}
     {{/* anchor will go inside the figure later */}}
     {{ $anchor = printf "<a href=\"%s\" style=\"display: block;\">" $url }}
   {{- end -}}
 
-  {{ $figcss := "width: fit-content; " }}
-  {{ with $alignself }}
-    {{ $figcss = printf "%s %s" $figcss $alignself }}
-  {{ end }}
   {{ $capcss := "" }}
 
   {{/* warnf "posclass='%s' lightboxstring='%s'" $posclass $lightboxstring */}}
-  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $class1 }} {{ $class2 }} {{ $posclass }}" {{ $lightboxstring | safeHTMLAttr}} {{ with $figcss }}style="{{ . | safeCSS }}"{{ end }}>
+  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr}}>
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <img loading=lazy class=""
     {{/* Only include srcset if there is more than one */}}
@@ -361,13 +357,13 @@
     {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end -}}
     src="{{ $defaultimage.RelPermalink }}" 
     {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"  { { /* see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
-    {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}
+    {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
     {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
     style="{{ $imagemargincss | safeCSS }}" {{/* 100% of figure                   .already done with img-fluid: max-width: 100%; height: auto; */}}
     {{/* object-fit: contain; ??? */}}
   >
   {{- if $caption -}}
-  <figcaption xclass=figure-caption style="{{ $capcss | safeCSS }}">{{ $caption | safeHTMLAttr }}</figcaption>
+  <figcaption class=figset-caption style="{{ $capcss | safeCSS }}">{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
   </figure>
   {{- if $anchor -}}</a>{{- end -}}

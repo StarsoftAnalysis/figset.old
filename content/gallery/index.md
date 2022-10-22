@@ -20,9 +20,9 @@ menu: main
 {{</figrow>}}  
 
 
-## No Height
+## No Height, random class and figsetclass
 
-{{<figrow id=figrow2 gallery=test1 class="border rounded fred border-danger p-3" figsetclass="border-3 font-italic " justify=between xcaption="So shaken as we are, so wan with care" xalign="baseline" xheight=200 size=thumbnail >}}
+{{<figrow id=figrow2 gallery=test1 class="border rounded fred border-danger p-3" figsetclass="border-3 font-italic " justify=EVEN xcaption="So shaken as we are, so wan with care" xalign="baseline" xheight=200 size=thumbnail >}}
 {{<figset name="FordingbridgeClockTower.jpg" caption="sldkfj sldk sldk jsldk jlk" >}}
 {{<figset name="P1130500.JPG" class="font-weight-bold" caption="guns and roses" align="baseline" >}}
 {{<figset name="P1130501.JPG" id="fblue" caption="anything you Like alskdfj lskj slkdfj sldkf jsldkfj sldkfj sldkfj l" xsize=small >}}

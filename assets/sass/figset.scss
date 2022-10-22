@@ -15,14 +15,10 @@ div.figrow {
   img { display: table-cell; }
   figcaption { display: table-caption; caption-side: bottom; }
 }
-/* wrong:
-.figrow-align-center { align-items: center }
-.figrow-align-stretch { align-items: stretch }
-.figrow-align-default { align-items: center } // default
-*/
 
 figure.figset {
   margin: 0 2vw 2vw; // maybe should be 0 on narrow screens
+  width: fit-content;
   //? gets overridden within a row    display: inline-table;
   figcaption {
     //display: table-cell;
@@ -30,6 +26,21 @@ figure.figset {
   }
   img { max-width: 100% }
 }
+
+// figrow justify-content classes
+div.figrow.figrow-jccenter  { justify-content: center; }
+div.figrow.figrow-jcstart   { justify-content: flex-start; }
+div.figrow.figrow-jcend     { justify-content: flex-end; }
+div.figrow.figrow-jcaround  { justify-content: space-around; }
+div.figrow.figrow-jcbetween { justify-content: space-between; }
+div.figrow.figrow-jcevenly  { justify-content: space-evenly; }
+
+// figset align-self classes
+figure.figset.figset-ascenter   { align-self: center }
+figure.figset.figset-asstretch  { align-self: stretch }
+figure.figset.figset-asbaseline { align-self: baseline }
+figure.figset.figset-asstart    { align-self: flex-start }
+figure.figset.figset-asend      { align-self: flex-end }
 
 /* Classes for testing: */
 .figset-test1 {

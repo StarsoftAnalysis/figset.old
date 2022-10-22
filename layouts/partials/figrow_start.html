@@ -35,35 +35,35 @@
 {{ $id := .id }}
 {{ $class := .class }}
 
-{{ $justifycontent := "" }}
+{{ $jcclass := "" }}
 {{ if or (or (hasPrefix "start" $justify) (hasPrefix "left" $justify)) (eq $justify "flex-start") }}
-  {{ $justifycontent = "flex-start" }}  
+  {{ $jcclass = "figrow-jcstart" }}
 {{ else if or (hasPrefix "right" $justify) (eq $justify "flex-end") }}{{/* "end" is handled below */}}
-  {{ $justifycontent = "flex-end" }}  
+  {{ $jcclass = "figrow-jcend" }}
 {{ else if or (hasPrefix "center" $justify) (hasPrefix "centre" $justify) }}
-  {{ $justifycontent = "center" }}
+  {{ $jcclass = "figrow-jccenter" }}
 {{ else if or (hasPrefix "around" $justify) (eq $justify "space-around") }}
-  {{ $justifycontent = "space-around" }}
+  {{ $jcclass = "figrow-jcaround" }}
 {{ else if or (hasPrefix "between" $justify) (eq $justify "space-between") }}
-  {{ $justifycontent = "space-between" }}
+  {{ $jcclass = "figrow-jcbetween" }}
 {{ else if eq $justify "space-evenly" }}{{/* "evenly" is handled below */}}
-  {{ $justifycontent = "space-evenly" }}
+  {{ $jcclass = "figrow-jcevenly" }}
 {{ else if hasPrefix $justify "e" }}
   {{/* Values beginning with "e" -- unique after one letter */}}
   {{ $justify2 := substr $justify 1 }}
   {{ if $justify2 }}
     {{ if hasPrefix "nd" $justify2 }}
-      {{ $justifycontent = "flex-end" }}
+      {{ $jcclass = "figrow-jceend" }}
     {{ else if hasPrefix "venly" $justify2 }}
-      {{ $justifycontent = "space-evenly" }}
+      {{ $jcclass = "figrow-jcevenly" }}
     {{ end }}
   {{ end }}
 {{ end }}
-{{ if not $justifycontent }}
+{{ if not $jcclass }}
   {{ warnf "figrow: invalid justify value '%s': using '%s'" $justify $dftj }}
-  {{ $justifycontent = $dftj }}
+  {{ $jcclass = "figrow-jccenter" }}
 {{ end }}
 
-<div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $class }}" style="justify-content: {{ $justifycontent | safeCSS }};">
+<div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $jcclass }} {{ $class }}">
 
 {{/* The end of the div is in partials/figrow_end.html */}}
