@@ -231,7 +231,6 @@
       {{/* See [image] section of config.toml for image processing options */}}
       {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
     {{- end -}}
-    {{/* warnf "fs(h): heightval=%v hunit=%s imagelist=%v imcss=%v posclass=%v sizes=%v\n" $heightval $heightunit $imagelist $imagemargincss $posclass $sizes */}}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
     {{- end -}}
@@ -341,10 +340,9 @@
 
   {{ $capcss := "" }}
 
-  {{/* warnf "posclass='%s' lightboxstring='%s'" $posclass $lightboxstring */}}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr}}>
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
-  <img loading=lazy class=""
+  <img loading=lazy class="figset-img"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
       srcset="
