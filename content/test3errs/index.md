@@ -4,10 +4,10 @@ Menu: main
 ---
 
 {{<figrow gallery=test1 justify="start" size=wrong >}}
-{{<figset name="img20220824_095038_DRO-800.jpg" size=average >}}
-{{<figset image="img20220824_105444_DRO-800.jpg" position=top >}}
+{{<figset name="img20220824_095038_DRO-800.jpg" size=average title="<Grand Title>" alt="Alt's good" >}}
+{{<figset image="img20220824_105444_DRO-800.jpg" position=top  >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="notfound-800.jpg"  >}}
+{{<figset name="notfound-800.jpg" caption="Caption's are \"kool<>?'\"" title="Where's the title going? <>&'\"" >}}
 {{</figrow>}}  
 
 Valid justify values: 
