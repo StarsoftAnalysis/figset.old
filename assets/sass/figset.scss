@@ -2,18 +2,13 @@
 
 // Figrow/figset
 div.figrow {
-  // what's this for?
-	//margin: 0 -3vw -3vw;
-	//figure {
-	//	margin: 0 3vw 3vw;
-	//}
   margin: 0;
   display: flex; 
   flex-direction: row; 
   flex-wrap: wrap;
   figure { display: table; }
   img { display: table-cell; }
-  figcaption { display: table-caption; caption-side: bottom; }
+  figcaption { display: table-caption; }
 }
 
 figure.figset {

@@ -133,7 +133,6 @@
   {{- $heightunit := "" -}}
   {{- $imagelist := slice -}}{{/* empty slice */}}
   {{- $imagemargincss := "" -}}
-  {{- $posclass := "" -}}
   {{- $sizes := "" -}}
   
   {{- $sizeString := "" -}}
@@ -159,6 +158,7 @@
   {{- end -}}
 
   {{/* Position is ignored within a figrow */}}
+  {{- $posclass := "" -}}
   {{ if $figrow }}
     {{ if $position }}
       {{ warnf "figset: position ignored within figrow for image %v" $image }}
@@ -333,15 +333,13 @@
     {{/* NOTE either data-remote or href gets used for the image to display */}}
 
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
-    {{/* warnf "simple link" */}}
-    {{/* anchor will go inside the figure later */}}
-    {{ $anchor = printf "<a href=\"%s\" style=\"display: block;\">" $url }}
+    {{ $anchor = printf "<a href=\"%s\">" $url }}
   {{- end -}}
 
   {{ $capcss := "" }}
 
-  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr}}>
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
+  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr}}>
   <img loading=lazy class="figset-img"
     {{/* Only include srcset if there is more than one */}}
     {{- if gt (len $imagelist) 1 -}}
@@ -356,14 +354,13 @@
     {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"  { { /* see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
     {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
-    style="{{ $imagemargincss | safeCSS }}" {{/* 100% of figure                   .already done with img-fluid: max-width: 100%; height: auto; */}}
-    {{/* object-fit: contain; ??? */}}
+    {{- with $imagemargincss -}} style="{{ . | safeCSS }}"{{- end -}}
   >
-  {{- if $caption -}}
-  <figcaption class=figset-caption style="{{ $capcss | safeCSS }}">{{ $caption | safeHTMLAttr }}</figcaption>
+  {{ if $caption -}}
+  <figcaption class=figset-caption {{ with $capcss }}style="{{ . | safeCSS }}"{{ end }}>{{ $caption | safeHTMLAttr }}</figcaption>
   {{- end -}}
   </figure>
-  {{- if $anchor -}}</a>{{- end -}}
+  {{ if $anchor }}</a>{{ end }}
 
 {{- else -}}
 [image '{{ $name }}' not found]

@@ -114,7 +114,7 @@
 
 {{/* FIXME should '.' be a different context, e.g. '.Site' ?? */}}
 {{ $mainstyle := resources.Get "sass/main.scss" | resources.ExecuteAsTemplate "css/main.css" . | toCSS $options | fingerprint }}
-<link rel="stylesheet" href="{{ $mainstyle.RelPermalink }}" type="text/css" integrity="{{ $mainstyle.Data.Integrity }} media=all">
+<link rel="stylesheet" href="{{ $mainstyle.RelPermalink }}" type="text/css" integrity="{{ $mainstyle.Data.Integrity }}" media=all>
 
 {{/* FIXME can't work out how to set a variable for testing here from a template (e.g. from layouts/catshowcase/single.html), so for now we'll include lbssa on ALL pages */}}
 {{/* if .Params.lightboxSSA */}}
