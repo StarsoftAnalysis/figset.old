@@ -11,6 +11,7 @@
     - put 'figrow true' in the figset partial's dict, otherwise the figcaptions get all narrow -- still don't know why exactly.
 
   TODO:
+  * sizeString --only used values?    and srcset works best even if only one -- perhaps shouldn't do sizeString if only one
   * imagemargincss -- use classes
   * option to clear before rather than after?
   * add captions in lightbox
@@ -83,6 +84,7 @@
     .class2 -- classes for this figset
     .capclass -- classes for figcaption
     .id     -- id of this figset
+    .debug -- true to output debug info as warnings
 
 */}}
 
@@ -119,17 +121,13 @@
 {{- $capclass := .capclass -}}
 {{- $id := .id -}}
 {{- $clear := .clear | default "none" -}}
-
-{{/* Some things only apply within a figrow (and vice versa) */}}
-{{ if $figrow }}
-{{ else }}
-{{ end }}
+{{- $debug := .debug | default false -}}
 
 {{/* TEMP diagnostics: */}}
-{{/* $caption = printf "i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow */}}
-
-{{/* warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image */}}
-{{/* There should always be an image (see placeholder above) so just return if not */}}
+{{ if $debug }}
+{{ warnf "figset: i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow }}
+{{ end }}
+{{ if $debug }}{{ warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image }}{{ end }}
 
 {{- if $image -}}
   {{- $origwidth := $image.Width -}}
@@ -139,7 +137,7 @@
   {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
   {{/* Just a big list, in descending order (so that default size is first, and so that JS (i.e. lightboxSSA) can handle the list easily) */}} {{/* REMOVE -- it's in _imagesize */}}
   {{- $allwidths := slice 1800 1600 1400 1200 1000 800 600 400 200 -}}{{/* REMOVE -- it's in _imagesize */}}
-  {{/* warnf "fs: origw,h=%d,%d aspect=%.2f origsize=%d ssize=%d maxwidth=%d\n" $origwidth $origheight $aspect $origsize $selfsize $maxwidth */}}
+  {{ if $debug }}{{ warnf "figset: origw,h=%d,%d aspect=%.2f origsize=%d ssize=%d maxwidth=%d\n" $origwidth $origheight $aspect $origsize $selfsize $maxwidth }}{{ end }}
 
   {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
@@ -153,10 +151,10 @@
     {{/* Link to the image itself -- but limited by selfsize */}}
     {{/* FIXME do we need to do the whole srcset thing for the linked image? NO *
     {{- $imagedetails := partial "figset_imagesize.html" (dict "image" $image "size" $selfsize "aspect" $aspect "maxwidth" $maxwidth) -}}
-    {{ warnf "imagedetails: %+v" $imagedetails }}
+    {{ if $debug }}{{ warnf "figset: imagedetails: %+v" $imagedetails }}{{ end }}
     {{- $linkedimage := index $imagedetails.imagelist 0 -}}
     {{- $url = $linkedimage.RelPermalink -}}
-    {{ warnf "linked=%+#v url=%s" $linkedimage $url }}
+    {{ if $debug }}{{warnf "figset: linked=%+#v url=%s" $linkedimage $url }}{{ end }}
     */}}
     {{- $linkedimage := $image -}}
     {{- if gt $origsize $selfsize -}}
@@ -281,7 +279,6 @@
     {{ else }}
       {{ warnf "figset: invalid value for size '%s' -- using 'medium' instead." $size }}
     {{ end }}
-    {{/* warnf ">>> $size='%s'  equaltothumb = %v\n" $size (eq $size "thumb") */}}
 
     {{/* now only one set of calcs required */}}
     {{ $idealAspect  := 1.4 }}
@@ -291,22 +288,26 @@
       {{ $areas = $areas | append (int (math.Round (div (mul $w $w) $idealAspect))) }}
       {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
       {{ $y := math.Sqrt (div $area $aspect) }}
-      {{/* warnf "fs:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) */}}
+      {{ if $debug }}{{ warnf "figset:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) }}{{ end }}
       {{ $widths = $widths | append (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
     {{ end }}
-    {{/* warnf "fs:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths */}}
+    {{ if $debug }}{{ warnf "figset:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
 
     {{/* NOTE: these sizes are taken from Bootstrap */}}
+    {{/* FIXME only included sizes that we're using... */}}
     {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
-    {{/* warnf "sizeString=%s\n" $sizeString */}} 
+    {{ if $debug }}{{ warnf "figset: sizeString=%s\n" $sizeString }}{{ end }}
 
     <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
     {{- range $w := $allwidths -}}
       {{- if le $w $maxwidth -}}
+        {{ if $debug }}{{ warnf "figset: maxwidth=%v w=%v appending after resize %dx" $maxwidth $w $w }}{{ end }}
         {{- $imagelist = $imagelist | append ($image.Resize (printf "%dx jpg" $w)) -}}
       {{- end -}}
     {{- end -}}
+    {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
     {{- if eq (len $imagelist) 0 -}}
+      {{ if $debug }}{{ warnf "figset: imagelist list empty -- just using the original image" }}{{ end }}
       {{- $imagelist = $imagelist | append $image -}}
     {{- end -}}
 
@@ -321,7 +322,7 @@
     {{/* FIXME passing RelPermalink as the gallery name seems a bit weird, but how else to make it unique? */}}
     {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
   {{- end -}}
-  {{/* warnf "fs: lbstring=%s  gallery=%s\n" $lightboxstring $gallery */}}
+  {{ if $debug }}{{ warnf "figset: lbstring=%s  gallery=%s\n" $lightboxstring $gallery }}{{ end }}
 
   {{/* Create srcset entries as a dict */}}
   {{- $srcset := slice -}}
@@ -331,11 +332,10 @@
 
   {{- $anchor := "" -}}
   {{- if $lightboxstring -}}
-    {{/* warnf "lbs is not empty..." */}}
     {{/* TODO maybe -- let the JS extract the image url/name from the fig */}}
     {{- $lightboxstring = printf "%s data-image='%s'" $lightboxstring $defaultimage.RelPermalink -}}
 
-    {{/* warnf "adding to lbs: url=|%s| alt=|%s| title=|%s|" $url $alt $title */}}
+    {{ if $debug }}{{ warnf "figset: adding to lbs: url=|%s| alt=|%s| title=|%s|" $url $alt $title }}{{ end }}
     {{- with $url -}}{{- $lightboxstring = printf "%s data-url=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
     {{- with $alt -}}{{- $lightboxstring = printf "%s data-alt=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
     {{/* use caption as default title just for the lightbox */}}
@@ -350,8 +350,8 @@
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
-    {{/* Only include srcset if there is more than one */}}
-    {{ if gt (len $imagelist) 1 }}
+    {{/* Only include srcset if there is more than zero */}}
+    {{ if gt (len $imagelist) 0 }}
       srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
     {{- end -}}
     {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end }}

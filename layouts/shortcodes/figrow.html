@@ -6,6 +6,7 @@
     * id
     * class
     * figsetclass
+    * debug - set true to output debug information as warnings
   NOTE Other figset options can be set for figrow and will be used in figset
   e.g. {{< figrow size=large >}}{{ figset name="x.png" }}{{ figset name="y.jpg" size=small }}...
   sets size for x.png to large without any work here.  For y.jpg, small will override the setting in figrow.
@@ -19,10 +20,11 @@
 {{ $id          := .Get "id" }}
 {{ $class       := .Get "class" }}
 {{ $figsetclass := .Get "figsetclass" }}
+{{ $debug       := .Get "debug" }}
 
 {{/* We DON'T need to deal with parameters used by figset via its .Parent -- the shortcode mechanism handles that automatically. */}}
 
-{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "justify" $justify  "id" $id  "class" $class  "figsetclass" $figsetclass) }}
+{{ partial "figrow_start.html" (dict  "page" .Page  "figrow" true  "justify" $justify  "id" $id  "class" $class  "figsetclass" $figsetclass  "debug" $debug) }}
   {{ with .Inner }}{{ . }}{{ end }}
-{{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear) }}
+{{ partial "figrow_end.html"   (dict  "page" .Page  "clear" $clear  "debug" $debug) }}
 

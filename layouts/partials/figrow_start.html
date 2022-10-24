@@ -30,40 +30,42 @@
 
 */}}
 
-{{ $dftj := "center" }}
-{{ $justify := lower .justify | default $dftj }}
-{{ $id := .id }}
-{{ $class := .class }}
+{{- $dftj := "center" -}}
+{{- $justify := lower .justify | default $dftj -}}
+{{- $id := .id -}}
+{{- $class := .class -}}
+{{- $debug := .debug | default false -}}
 
-{{ $jcclass := "" }}
-{{ if or (or (hasPrefix "start" $justify) (hasPrefix "left" $justify)) (eq $justify "flex-start") }}
-  {{ $jcclass = "figrow-jcstart" }}
-{{ else if or (hasPrefix "right" $justify) (eq $justify "flex-end") }}{{/* "end" is handled below */}}
-  {{ $jcclass = "figrow-jcend" }}
-{{ else if or (hasPrefix "center" $justify) (hasPrefix "centre" $justify) }}
-  {{ $jcclass = "figrow-jccenter" }}
-{{ else if or (hasPrefix "around" $justify) (eq $justify "space-around") }}
-  {{ $jcclass = "figrow-jcaround" }}
-{{ else if or (hasPrefix "between" $justify) (eq $justify "space-between") }}
-  {{ $jcclass = "figrow-jcbetween" }}
-{{ else if eq $justify "space-evenly" }}{{/* "evenly" is handled below */}}
-  {{ $jcclass = "figrow-jcevenly" }}
-{{ else if hasPrefix $justify "e" }}
+{{- $jcclass := "" -}}
+{{- if or (or (hasPrefix "start" $justify) (hasPrefix "left" $justify)) (eq $justify "flex-start") -}}
+  {{- $jcclass = "figrow-jcstart" -}}
+{{- else if or (hasPrefix "right" $justify) (eq $justify "flex-end") -}}{{/* "end" is handled below */}}
+  {{- $jcclass = "figrow-jcend" -}}
+{{- else if or (hasPrefix "center" $justify) (hasPrefix "centre" $justify) -}}
+  {{- $jcclass = "figrow-jccenter" -}}
+{{- else if or (hasPrefix "around" $justify) (eq $justify "space-around") -}}
+  {{- $jcclass = "figrow-jcaround" -}}
+{{- else if or (hasPrefix "between" $justify) (eq $justify "space-between") -}}
+  {{- $jcclass = "figrow-jcbetween" -}}
+{{- else if eq $justify "space-evenly" -}}{{/* "evenly" is handled below */}}
+  {{- $jcclass = "figrow-jcevenly" -}}
+{{- else if hasPrefix $justify "e" -}}
   {{/* Values beginning with "e" -- unique after one letter */}}
-  {{ $justify2 := substr $justify 1 }}
-  {{ if $justify2 }}
-    {{ if hasPrefix "nd" $justify2 }}
-      {{ $jcclass = "figrow-jceend" }}
-    {{ else if hasPrefix "venly" $justify2 }}
-      {{ $jcclass = "figrow-jcevenly" }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-{{ if not $jcclass }}
-  {{ warnf "figrow: invalid justify value '%s': using '%s'" $justify $dftj }}
-  {{ $jcclass = "figrow-jccenter" }}
-{{ end }}
+  {{- $justify2 := substr $justify 1 -}}
+  {{- if $justify2 -}}
+    {{- if hasPrefix "nd" $justify2 -}}
+      {{- $jcclass = "figrow-jceend" -}}
+    {{- else if hasPrefix "venly" $justify2 -}}
+      {{- $jcclass = "figrow-jcevenly" -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $jcclass -}}
+  {{- warnf "figrow: invalid justify value '%s': using '%s'" $justify $dftj -}}
+  {{- $jcclass = "figrow-jccenter" -}}
+{{- end -}}
 
+{{ if $debug }}{{ warnf "figrow: justify=%s id=%s class=%s" $justify $id $class }}{{ end }}
 <div {{ with $id }}id="{{ . }}"{{ end }} class="figrow {{ $jcclass }} {{ $class }}">
 
 {{/* The end of the div is in partials/figrow_end.html */}}
