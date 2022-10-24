@@ -90,9 +90,9 @@ Last figset before footer:
 ## Captions
 
 Figrows
-{{<figrow justify=left caption="justify=left" >}}
+{{<figrow justify=left caption="justify=left" capclass="figset-test1" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
-{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small caption="j=l capclass=2" capclass="figset-test2">}}
 {{</figrow>}}  
 {{<figrow justify=right caption="justify=right" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
@@ -107,7 +107,9 @@ Figrows
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{</figrow>}}  
 
-Without figrow
-{{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=left caption="pos left" >}}
+Without figrow, capclasses
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=left caption="pos left" capclass="figset-test1" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=centre caption="pos centre" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=right caption="pos right" >}}
+
+

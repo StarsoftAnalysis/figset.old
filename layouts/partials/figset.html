@@ -1,6 +1,8 @@
 {{/*
   figset partial, version of figure with srcsetting.
 
+  Version 0.9.0  24/10/2022
+
   This is figset -- copied from figset 27/4/20, for use with hacked lightbox2:
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
@@ -12,22 +14,17 @@
   * imagemargincss -- use classes
   * option to clear before rather than after?
   * add captions in lightbox
-  * add captionclass ?
   * Use separate file for calcs??
   * Still don't know when to use htmlEscape vs safeHTMLAttr -- the former leaves &lt; in title attribute, but not in data-title !?
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
   * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-  * get rid of bootstrap or use it properly -- via external CSS
   * decouple from lightboxSSA to allow use of other lightboxes??
-  * selfsize to limit size of expanded image, e.g. if not in a gallery
   * url/link -- option e.g. url=self to link to selfsize version of same image
     - rename url to link?
   * fix 'null' when hovering over image in carousel
   * height is fixed no. of pixels, i.e. not responsive, which is rubbish.  at the moment can use width=nnpx to make
     the caption fit the width of the picture.
   * try height with vw units...
-  * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
-  * caption alignment -- need to match figrow's justify?   or does figset have a justify too?
   * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
@@ -51,6 +48,8 @@
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
   * default align-self to start if height
   * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
+  * caption alignment -- need to match figrow's justify?   or does figset have a justify too?
+  * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
 
   This can be used from another template, with args passed in as a dict, e.g.
     {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
@@ -82,6 +81,7 @@
             -- if em, depends on font size, so maybe don't handle that.  Or assume 16px
     .class1 -- classes from parent figrow
     .class2 -- classes for this figset
+    .capclass -- classes for figcaption
     .id     -- id of this figset
 
 */}}
@@ -116,6 +116,7 @@
 {{- $align := lower .align }}{{/* See below for default */}}
 {{- $class1 := .class1 -}}
 {{- $class2 := .class2 -}}
+{{- $capclass := .capclass -}}
 {{- $id := .id -}}
 {{- $clear := .clear | default "none" -}}
 
@@ -361,7 +362,7 @@
     {{- with $imagemargincss -}} style="{{ . | safeCSS }}"{{- end -}}
   >
   {{ if $caption -}}
-  <figcaption class=figset-caption>{{ safeHTML $caption }}</figcaption>
+  <figcaption class="figset-caption {{ $capclass }}">{{ safeHTML $caption }}</figcaption>
   {{- end -}}
   </figure>
   {{ if $anchor }}</a>{{ end }}
