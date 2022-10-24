@@ -78,11 +78,36 @@ Blurb after figset, before head2.
 
 Last figset before footer:
 {{<figrow gallery=test1 clear=false >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{</figrow>}}  
 
 ## Testing classes
 {{<figrow gallery=test1 clear=false class="figset-test1" figsetclass="figset-test2" >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" position=center size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{</figrow>}}  
+
+## Captions
+
+Figrows
+{{<figrow justify=left caption="justify=left" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{</figrow>}}  
+{{<figrow justify=right caption="justify=right" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{</figrow>}}  
+{{<figrow justify=centre caption="justify=centre" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{</figrow>}}  
+{{<figrow justify=around caption="justify=around" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
+{{</figrow>}}  
+
+Without figrow
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=left caption="pos left" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=centre caption="pos centre" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg"  size=small position=right caption="pos right" >}}

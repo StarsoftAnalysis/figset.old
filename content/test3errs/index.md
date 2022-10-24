@@ -10,6 +10,13 @@ Menu: main
 {{<figset name="notfound-800.jpg" caption="Caption's are \"kool<>?'\"" title="Where's the title going? <>&'\"" >}}
 {{</figrow>}}  
 
+Captions:
+
+{{<figrow gallery=test1 justify="start" size=small >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" caption="Long caption to make sure it's all hanging tothether" >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" caption="Flksajdf lksjd lskjdf lskdj lskdfj lsdkfj lskdjf lskdfj" >}}
+{{</figrow>}}  
+
 Valid justify values: 
 {{<figrow gallery=test1 justify="centre" >}}centre{{</figrow>}}
 {{<figrow gallery=test1 justify="left" >}}left{{</figrow>}}

@@ -4,7 +4,12 @@
   This is figset -- copied from figset 27/4/20, for use with hacked lightbox2:
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
 
+  DON'T FORGET!!
+  * when using figrow_start partial from another template:
+    - put 'figrow true' in the figset partial's dict, otherwise the figcaptions get all narrow -- still don't know why exactly.
+
   TODO:
+  * imagemargincss -- use classes
   * option to clear before rather than after?
   * add captions in lightbox
   * add captionclass ?
@@ -27,6 +32,11 @@
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
   * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
+  * maxwidth limits e.g. La Alhambra on a wide screen.  think about it -- set a maxarea instead?
+  * sort out and document differeence betwen name and image params -- allow remote images!?
+  * left/right/start/end for Ltr and RTL scripts -- not well implemented so far.  left gets used as start, and then we don't know which was intended -- perhaps just get rid of left/right
+     - but then in CSS, wanting to do float-left when start was asked for...
+     - OR, as text-align and float can do start/end, when should keep left separate from start etc.
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -99,7 +109,7 @@
 {{- $title := .title | default "" }}
 {{- $caption := .caption | default "" -}}
 {{- $url := .url | default "" -}}  {{/* $image.Params.Url | default "" -}}{{/* FIXME is this right? will make the link go to the orig image? Need to test if $image is set */}}
-{{- $alt := .alt | default $title -}}
+{{- $alt := .alt | default $title | default "image" -}}
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default false -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
@@ -238,14 +248,13 @@
 
   {{- else -}}{{/* starting with size/width, so more complicated... */}}
 
-    {{/* TODO need this for selfsize too, so make it a function, ie a partial that returns stuff */}}
     {{/* 
       Image sizes are : thumbnail  small  medium  large  full -- any abbreviation is enough. 
       Based on a 'typical' 1.4:1 image, these fit across screen sizes 
       as defined in the $idealWXxx slices below (in vw aka % units)
       (bearing in mind that the available width is not the whole screen width)
       
-      The area A of each ideal image in term of aspect ratio (w/h) R is width*height or width-squared/R
+      The area A of each ideal image in term of aspect ratio (w/h) R is width*height or widthsquared/R
 
       Each real image, with aspect ratio R', should have the same area, so its height is sqrt(A/R')
       and its width is its height*R'
@@ -286,6 +295,7 @@
     {{ end }}
     {{/* warnf "fs:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths */}}
 
+    {{/* NOTE: these sizes are taken from Bootstrap */}}
     {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
     {{/* warnf "sizeString=%s\n" $sizeString */}} 
 
@@ -312,6 +322,12 @@
   {{- end -}}
   {{/* warnf "fs: lbstring=%s  gallery=%s\n" $lightboxstring $gallery */}}
 
+  {{/* Create srcset entries as a dict */}}
+  {{- $srcset := slice -}}
+  {{- range $i := $imagelist -}}
+    {{- $srcset = $srcset | append (printf "%s %dw" $i.RelPermalink $i.Width) -}}
+  {{- end -}}
+
   {{- $anchor := "" -}}
   {{- if $lightboxstring -}}
     {{/* warnf "lbs is not empty..." */}}
@@ -319,52 +335,33 @@
     {{- $lightboxstring = printf "%s data-image='%s'" $lightboxstring $defaultimage.RelPermalink -}}
 
     {{/* warnf "adding to lbs: url=|%s| alt=|%s| title=|%s|" $url $alt $title */}}
-    {{- with $url -}}{{- $lightboxstring = printf "%s data-url=\"s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
+    {{- with $url -}}{{- $lightboxstring = printf "%s data-url=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
     {{- with $alt -}}{{- $lightboxstring = printf "%s data-alt=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
     {{/* use caption as default title just for the lightbox */}}
     {{- with ($title | default $caption) }}{{ $lightboxstring = printf "%s data-title=\"%s\"" $lightboxstring (htmlEscape .) }}{{ end -}}
 
-    {{/* Create srcset entries as a dict */}}
-    {{- $srcset := slice -}}
-    {{- range $i := $imagelist -}}
-      {{- $srcset = $srcset | append (dict "url" $i.RelPermalink "width" $i.Width "height" $i.Height) -}}
-    {{- end -}}
-
     {{/* FIXME?? Use default image for href in case the clever JS doesn't work */}}
-    {{/* NOTE either data-remote or href gets used for the image to display */}}
 
   {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{ $anchor = printf "<a href=\"%s\">" $url }}
   {{- end -}}
 
-  {{ $capcss := "" }}
-
-  {{/*
-  {{ with $title }}
-  <pre>Test title: plain=|{{ . }}|  safeHTMLAttr=|{{ safeHTMLAttr . }}|  htmlEscape=|{{ htmlEscape . }}|</pre>
-  {{ end }}
-  */}}
-
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
-  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr}}>
+  <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
     {{/* Only include srcset if there is more than one */}}
-    {{- if gt (len $imagelist) 1 -}}
-      srcset="
-      {{- range $i := $imagelist -}}
-        {{- $i.RelPermalink }} {{ printf "%dw" $i.Width -}},
-      {{- end -}}
-      "
+    {{ if gt (len $imagelist) 1 }}
+      srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
     {{- end -}}
-    {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end -}}
+    {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end }}
     src="{{ $defaultimage.RelPermalink }}" 
-    {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"  { { /* see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
+    {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
     {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
     {{- with $imagemargincss -}} style="{{ . | safeCSS }}"{{- end -}}
   >
   {{ if $caption -}}
-  <figcaption class=figset-caption {{ with $capcss }}style="{{ . | safeCSS }}"{{ end }}>{{ $caption | safeHTMLAttr }}</figcaption>
+  <figcaption class=figset-caption>{{ safeHTML $caption }}</figcaption>
   {{- end -}}
   </figure>
   {{ if $anchor }}</a>{{ end }}
