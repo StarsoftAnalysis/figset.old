@@ -1,7 +1,7 @@
 {{/*
   figset partial, version of figure with srcsetting.
 
-  Version 0.9.0  24/10/2022
+  Version 0.9.1  24/10/2022
 
   This is figset -- copied from figset 27/4/20, for use with hacked lightbox2:
    - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
@@ -12,6 +12,7 @@
 
   TODO:
   * sizeString --only used values?    and srcset works best even if only one -- perhaps shouldn't do sizeString if only one
+   -- see avs green gram news article -- gg logo is too big -- shouldn't be expanded.
   * imagemargincss -- use classes
   * option to clear before rather than after?
   * add captions in lightbox
@@ -25,7 +26,7 @@
   * fix 'null' when hovering over image in carousel
   * height is fixed no. of pixels, i.e. not responsive, which is rubbish.  at the moment can use width=nnpx to make
     the caption fit the width of the picture.
-  * try height with vw units...
+  * try height with vw/vh units...
   * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
@@ -35,6 +36,8 @@
   * left/right/start/end for Ltr and RTL scripts -- not well implemented so far.  left gets used as start, and then we don't know which was intended -- perhaps just get rid of left/right
      - but then in CSS, wanting to do float-left when start was asked for...
      - OR, as text-align and float can do start/end, when should keep left separate from start etc.
+     - BETTER: keep left/start separate -- class for left can do the clever :dir() thing.  etc.
+  * lightbox=true not finished -- e.g. with height=100, lightbox is also only 100 -- use maxwidth or something?
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -160,8 +163,14 @@
     {{- if gt $origsize $selfsize -}}
       {{- if eq $origsize $origwidth -}}
         {{- $linkedimage = $image.Resize (printf "%dx jpg" $selfsize) -}}
+        {{- if $debug -}}
+          {{- $linkedimage = $linkedimage.Filter (images.Text (printf "resized %dx jpg" $selfsize) (dict "color" "#00ff00" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+        {{- end -}}
       {{- else -}}
         {{- $linkedimage = $image.Resize (printf "x%d jpg" $selfsize) -}}
+        {{- if $debug -}}
+          {{- $linkedimage = $linkedimage.Filter (images.Text (printf "resized x%d jpg" $selfsize) (dict "color" "#00ff00" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+        {{- end -}}
       {{- end -}}
     {{- end -}}
     {{- $url = $linkedimage.RelPermalink -}}
@@ -239,7 +248,11 @@
     {{- else -}}
       {{/* resize to the exact size required */}}
       {{/* See [image] section of config.toml for image processing options */}}
-      {{- $imagelist = $imagelist | append ($image.Resize (printf "x%d jpg" (int $heightval))) -}}
+      {{- $newimage := $image.Resize (printf "x%d jpg" (int $heightval)) -}}
+      {{- if $debug -}}
+        {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+      {{- end -}}
+      {{- $imagelist = $imagelist | append $newimage -}}
     {{- end -}}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
@@ -302,7 +315,11 @@
     {{- range $w := $allwidths -}}
       {{- if le $w $maxwidth -}}
         {{ if $debug }}{{ warnf "figset: maxwidth=%v w=%v appending after resize %dx" $maxwidth $w $w }}{{ end }}
-        {{- $imagelist = $imagelist | append ($image.Resize (printf "%dx jpg" $w)) -}}
+        {{- $newimage := $image.Resize (printf "%dx jpg" $w) -}}
+        {{- if $debug -}}
+          {{- $newimage = $newimage.Filter (images.Text (printf "resized %dx jpg" $w) (dict "color" "#ff0000" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+        {{- end -}}
+        {{- $imagelist = $imagelist | append $newimage -}}
       {{- end -}}
     {{- end -}}
     {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
@@ -350,11 +367,14 @@
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
-    {{/* Only include srcset if there is more than zero */}}
-    {{ if gt (len $imagelist) 0 }}
-      srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
+    {{- /* If simple height specified, just a simple image */ -}}
+    {{- if not $height -}}
+      {{/* Only include srcset if there is more than zero */}}
+      {{ if gt (len $imagelist) 0 }}
+        srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
+      {{- end -}}
+      {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end }}
     {{- end -}}
-    {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end }}
     src="{{ $defaultimage.RelPermalink }}" 
     {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}

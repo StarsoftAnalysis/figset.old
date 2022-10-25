@@ -5,18 +5,18 @@ Menu: main
 
 Blurb before row of four.
 
-{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" >}}
+{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true >}}
 {{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
-{{<figset image="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=medium >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
 {{<figset name="notfound-800.jpg" size=small >}}
 {{</figrow>}}  
 
 Blurb before three figsets not in a figrow:
 
-{{<figset name="img20220824_095038_DRO-800.jpg" size=small url=self caption="url=self" position=l >}}
-{{<figset image="img20220824_105444_DRO-800.jpg" size=small height=100 caption="height=100"  position=c >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
+{{<figset name="img20220824_095038_DRO-800.jpg" debug=true size=small url=self selfsize=750 caption="url=self750" position=l >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" debug=true size=small height=100 caption="height=100" lightbox=true position=c >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" debug=true size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
 Blurb between row of three and single figset. On left with wrapped text.
 

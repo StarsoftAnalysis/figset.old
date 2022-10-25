@@ -63,7 +63,7 @@
 {{ $capclass := .Get "capclass" | default ($p.Get "capclass") }}
 {{ $id       := .Get "id" }}
 {{ $clear    := .Get "clear" }}
-{{ $debug    := .Get "debug" | default ($.Get "debug") }}
+{{ $debug    := .Get "debug" | default ($p.Get "debug") }}
 
 {{ partial "figset.html" (dict "page" .Page   "name" $name  "position" $position  "size" $size  "height" $height  "maxwidth" $maxwidth  "selfsize" $selfsize  "title" $title  "caption" $caption  "capclass" $capclass  "alt" $alt  "url" $url  "gallery" $gallery  "lightbox" $lightbox  "align" $align  "class1" $class1  "class2" $class2  "id" $id  "clear" $clear  "figrow" $figrow  "debug" $debug) }}
 

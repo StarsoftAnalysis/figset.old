@@ -13,5 +13,6 @@ baseurl="$ip:$port"
 # Need future content for planned events etc.
 future="--buildFuture"
 draft="--buildDrafts"
+clean="--cleanDestinationDir"
 
-$hugo server --baseURL="$ip:$port/" --port=$port --bind=$ip -c $content --renderToDisk -d $dest --disableFastRender --watch $future $draft --verbose --noHTTPCache "$@"
+$hugo server --baseURL="$ip:$port/" --port=$port --bind=$ip -c $content --renderToDisk -d $dest --disableFastRender --watch $future $draft --verbose --noHTTPCache $clean "$@"
