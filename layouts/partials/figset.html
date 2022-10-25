@@ -1,25 +1,18 @@
 {{/*
   figset partial, version of figure with srcsetting.
 
-  Version 0.9.1  24/10/2022
-
-  This is figset -- copied from figset 27/4/20, for use with hacked lightbox2:
-   - no wrapping <a> -- add the data-lightbox etc. to the <fig> 
+  Version 0.9.1  25/10/2022
 
   DON'T FORGET!!
   * when using figrow_start partial from another template:
     - put 'figrow true' in the figset partial's dict, otherwise the figcaptions get all narrow -- still don't know why exactly.
 
   TODO:
-  * sizeString --only used values?    and srcset works best even if only one -- perhaps shouldn't do sizeString if only one
-   -- see avs green gram news article -- gg logo is too big -- shouldn't be expanded.
-  * imagemargincss -- use classes
   * option to clear before rather than after?
   * add captions in lightbox
   * Use separate file for calcs??
   * Still don't know when to use htmlEscape vs safeHTMLAttr -- the former leaves &lt; in title attribute, but not in data-title !?
   * more size options, e.g. 50% (width), 6em, bs4 class... -- but how to scale those for area?
-  * lazy loading -- see https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
   * decouple from lightboxSSA to allow use of other lightboxes??
   * url/link -- option e.g. url=self to link to selfsize version of same image
     - rename url to link?
@@ -30,7 +23,6 @@
   * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
-  * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
   * maxwidth limits e.g. La Alhambra on a wide screen.  think about it -- set a maxarea instead?
   * sort out and document differeence betwen name and image params -- allow remote images!?
   * left/right/start/end for Ltr and RTL scripts -- not well implemented so far.  left gets used as start, and then we don't know which was intended -- perhaps just get rid of left/right
@@ -38,6 +30,7 @@
      - OR, as text-align and float can do start/end, when should keep left separate from start etc.
      - BETTER: keep left/start separate -- class for left can do the clever :dir() thing.  etc.
   * lightbox=true not finished -- e.g. with height=100, lightbox is also only 100 -- use maxwidth or something?
+    * FIXME: small images (thumbnails) are still small in carousel  (Can't reproduce that now)
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -147,8 +140,7 @@
   {{- $imagelist := slice -}}{{/* empty slice */}}
   {{- $imagemargincss := "" -}}
   {{- $sizes := "" -}}
-  
-  {{- $sizeString := "" -}}
+  {{- $sizeString := "" -}}  
 
   {{- if eq (lower $url) "self" -}}
     {{/* Link to the image itself -- but limited by selfsize */}}
@@ -243,7 +235,7 @@
     {{- end -}}
     {{- if gt $heightval $origheight -}}
       {{/* don't want to expand image, so give it a top/bottom margin */}}
-      {{- $imagemargincss = printf "margin: %fpx 0; border: 1px solid red;" (div (sub $heightval $origheight) 2.0) -}}
+      {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
       {{- $imagelist = $imagelist | append $image -}}
     {{- else -}}
       {{/* resize to the exact size required */}}
@@ -272,6 +264,7 @@
       and its width is its height*R'
     */}}
     {{/*       screen width:  1200+ 992+ 768+ 576+ else */}}
+    {{ $cutoffs      := slice 1200  992  768  576    0 }}
     {{ $idealWThumb  := slice   10   12   15   25   45 }}
     {{ $idealWSmall  := slice   25   25   30   45  100 }}
     {{ $idealWMedium := slice   33   40   50   80  100 }}
@@ -297,18 +290,27 @@
     {{ $idealAspect  := 1.4 }}
     {{ $areas := slice }}
     {{ $widths := slice }}
-    {{ range $w := $idealW }}
+    {{ $sizestrings := slice }}
+    {{ range $i, $w := $idealW }}
       {{ $areas = $areas | append (int (math.Round (div (mul $w $w) $idealAspect))) }}
       {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
       {{ $y := math.Sqrt (div $area $aspect) }}
       {{ if $debug }}{{ warnf "figset:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) }}{{ end }}
-      {{ $widths = $widths | append (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
+      {{ $width := (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
+      {{ $widths = $widths | append $width }}
+      {{ if eq (index $cutoffs $i) 0 }}
+        {{ $sizestrings = $sizestrings | append (printf "%dvw" $width) }}
+      {{ else }}
+        {{ $sizestrings = $sizestrings | append (printf "(min-width: %dpx) %dvw" (index $cutoffs $i) $width) }}
+      {{ end }}
     {{ end }}
     {{ if $debug }}{{ warnf "figset:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
 
     {{/* NOTE: these sizes are taken from Bootstrap */}}
     {{/* FIXME only included sizes that we're using... */}}
-    {{ $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) }}
+
+    {{/* $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) */}}
+    {{ $sizeString = delimit $sizestrings ", " }}
     {{ if $debug }}{{ warnf "figset: sizeString=%s\n" $sizeString }}{{ end }}
 
     <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
