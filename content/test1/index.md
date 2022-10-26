@@ -6,10 +6,10 @@ Menu: main
 Blurb before row of four.
 
 {{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true >}}
-{{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
-{{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="notfound-800.jpg" size=small >}}
+  {{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
+  {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
+  {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
+  {{<figset name="notfound-800.jpg" size=small >}}
 {{</figrow>}}  
 
 Blurb before three figsets not in a figrow:
