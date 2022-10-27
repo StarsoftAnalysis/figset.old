@@ -364,8 +364,9 @@
     {{/* FIXME passing RelPermalink as the gallery name seems a bit weird, but how else to make it unique? */}}
     {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
   {{- end -}}
+  {{- $lightboxstring = printf "%s data-aspect=%f" $lightboxstring $aspect -}}
   {{- if and $height $lightbox -}}
-    {{- with $srcsetString }}{{ $lightboxstring = printf "%s x1 data-srcset=\"%s\" x2 data-sizes=\"%s\"" $lightboxstring . $sizesString }}{{ end -}}
+    {{- with $srcsetString }}{{ $lightboxstring = printf "%s data-srcset=\"%s\" data-aspect=%f" $lightboxstring . $aspect }}{{ end -}}
   {{- end -}}
   {{- if $debug }}{{ warnf "figset: lbstring=%s" $lightboxstring }}{{ end -}}
 
@@ -381,8 +382,9 @@
       width="{{ $defaultwidth }}px"
     {{ else }}
       {{/* This still doesn't work: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"{{ *   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
-      {{ with $srcsetString }}srcset="{{ . | safeHTMLAttr }}"{{ end }}
-      {{ with $sizesString }}sizes="{{ . | safeHTMLAttr }}"{{ end }}
+      {{ with $srcsetString }}srcset="{{ . | safeHTMLAttr }}"
+        {{ with $sizesString }}sizes="{{ . | safeHTMLAttr }}"{{ end }}
+      {{ end }}
     {{ end }}
     src="{{ $defaultimage.RelPermalink }}" 
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
