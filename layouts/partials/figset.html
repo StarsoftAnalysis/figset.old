@@ -1,15 +1,13 @@
 {{/*
   figset partial, version of figure with srcsetting.
 
-  Version 0.9.1  25/10/2022
+  Version 0.9.2  27/10/2022
 
   DON'T FORGET!!
   * when using figrow_start partial from another template:
     - put 'figrow true' in the figset partial's dict, otherwise the figcaptions get all narrow -- still don't know why exactly.
 
   TODO:
-  * height and lightbox -- need srcset!
-  * pass srcset to lb as data-imagelist!?
   * option to clear before rather than after?
   * Use separate file for calcs??
   * difference between small and thumb is too much?
@@ -31,6 +29,7 @@
      - but then in CSS, wanting to do float-left when start was asked for...
      - OR, as text-align and float can do start/end, when should keep left separate from start etc.
      - BETTER: keep left/start separate -- class for left can do the clever :dir() thing.  etc.
+  * ??? remote images
 
   DONE:
   * if image not found, create a placeholder with various assumptions, e.g. it's square. i.e. use a placeholder image in static or wherever
@@ -59,7 +58,7 @@
     .page -- current page
     .figrow -- true if we're within a figrow (which is independent of whether there's a gallery)
     .name (of image within the page bundle)
-    .image (resource) or name (name of image file in bundle) -- image overrides name
+    .image (resource) -- image overrides name
     .position - left/start, right/end, centre/center -- can be abbreviated.
     .size - thumb, small, medium, large, full  TODO other sizes  FIXME hook into bootstrap sizing
     .maxwidth -- biggest size used for srcset in pixels, or for url=self
@@ -107,6 +106,7 @@
 {{- $caption := .caption | default "" -}}
 {{- $url := .url | default "" -}}  {{/* $image.Params.Url | default "" -}}{{/* FIXME is this right? will make the link go to the orig image? Need to test if $image is set */}}
 {{- $alt := .alt | default $caption | default $title | default "image" -}}
+{{- $maxwidth := int (.maxwidth | default 800) -}}
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default $gallery -}}{{- /* lightbox is true if any gallery name supplied */ -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
@@ -129,7 +129,6 @@
 
   {{/* Just a big list, in descending order (so that default size is first, and so that JS (i.e. lightboxSSA) can handle the list easily) */}} {{/* REMOVE -- it's in _imagesize */}}
   {{- $allwidths := slice 3200 2800 2400 2000 1800 1600 1400 1200 1000 800 600 400 200 -}}{{/* REMOVE -- it's in _imagesize */}}
-  {{- $maxwidth := (int (.maxwidth | default (index $allwidths 0))) -}}
   {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
   {{ if $debug }}{{ warnf "figset: origw,h=%d,%d aspect=%.2f origsize=%d ssize=%d maxwidth=%d\n" $origwidth $origheight $aspect $origsize $selfsize $maxwidth }}{{ end }}
 
@@ -140,7 +139,7 @@
   {{- $imagelist := slice -}}
   {{- $imagemargincss := "" -}}
   {{- $sizes := "" -}}
-  {{- $sizeString := "" -}}  
+  {{- $sizesString := "" -}}  
 
   {{- if eq (lower $url) "self" -}}
     {{/* Link to the image itself -- but limited by selfsize */}}
@@ -216,43 +215,9 @@
     {{ end }}
   {{ end }}
 
-  {{/* height overrides size */}}
-  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes */}}
-
-  {{- if $height -}}
-
-    {{/* We can only handle pixels as units -- either "123px" or "123" */}}
-    {{- $heightunit = "px" -}}{{/* default if no (or unknown) units */}}
-    {{- if strings.HasSuffix $height "px" -}}
-      {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
-    {{/* $heightunit is never used!
-    {{- else if strings.HasSuffix $height "vh" -}}
-      {{- $heightval = int (strings.TrimSuffix "vh" $height) -}}
-      {{- $heightunit = "vh" -}}
-    */}}
-    {{- else -}}
-      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any unknown suffix */}}
-    {{- end -}}
-    {{- if gt $heightval $origheight -}}
-      {{/* don't want to expand image, so give it a top/bottom margin */}}
-      {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
-      {{- /* $imagelist = $imagelist | append $image */ -}}
-      {{- $defaultimage = $image -}}
-    {{- else -}}
-      {{/* resize to the exact size required */}}
-      {{/* See [image] section of config.toml for image processing options */}}
-      {{- $newimage := $image.Resize (printf "x%d jpg" (int $heightval)) -}}
-      {{- if $debug -}}
-        {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
-      {{- end -}}
-      {{- /* $imagelist = $imagelist | append $newimage */ -}}
-      {{- $defaultimage = $newimage -}}
-    {{- end -}}
-    {{- if $size -}}
-      {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
-    {{- end -}}
-
-  {{- else -}}{{/* starting with size/width, so more complicated... */}}
+  {{/* Do the srcset/sizes preparation unless height is set and there's no lightbox */}}
+  {{/* FIXME srcset/sizes are only used by lightbox -- perhaps do them as data-srcset and data-sizes for height */}}
+  {{ if or $lightbox (not $height) }}
 
     {{/* 
       Image sizes are : thumbnail  small  medium  large  full -- any abbreviation is enough. 
@@ -306,12 +271,12 @@
         {{ $sizestrings = $sizestrings | append (printf "(min-width: %dpx) %dvw" (index $cutoffs $i) $width) }}
       {{ end }}
     {{ end }}
-    {{ if $debug }}{{ warnf "figset:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
+    {{ if $debug }}{{ warnf "figset: image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
 
     {{/* NOTE: these sizes are taken from Bootstrap */}}
-    {{/* $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) */}}
-    {{ $sizeString = delimit $sizestrings ", " }}
-    {{ if $debug }}{{ warnf "figset: sizeString=%s\n" $sizeString }}{{ end }}
+    {{/* $sizesString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) */}}
+    {{ $sizesString = delimit $sizestrings ", " }}
+    {{ if $debug }}{{ warnf "figset: sizesString=%s\n" $sizesString }}{{ end }}
 
     {{/* Create range of image sizes not greater than maxwidth, starting with the original image */}}
     {{ if le $origwidth $maxwidth }}
@@ -339,7 +304,58 @@
     {{- end -}}
     {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
 
+  {{ end }}{{/* if doing srcset/sizes stuff */}}
+
+  {{/* height overrides size */}}
+  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes */}}
+
+  {{- if $height -}}
+
+    {{/* We can only handle pixels as units -- either "123px" or "123" */}}
+    {{- $heightunit = "px" -}}{{/* default if no (or unknown) units */}}
+    {{- if strings.HasSuffix $height "px" -}}
+      {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
+    {{/* $heightunit is never used!
+    {{- else if strings.HasSuffix $height "vh" -}}
+      {{- $heightval = int (strings.TrimSuffix "vh" $height) -}}
+      {{- $heightunit = "vh" -}}
+    */}}
+    {{- else -}}
+      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any unknown suffix */}}
+    {{- end -}}
+    {{- if gt $heightval $origheight -}}
+      {{/* don't want to expand image, so give it a top/bottom margin */}}
+      {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
+      {{- $defaultimage = $image -}}
+    {{- else -}}
+      {{/* resize to the exact size required */}}
+      {{/* See [image] section of config.toml for image processing options */}}
+      {{- $newimage := $image.Resize (printf "x%d jpg" (int $heightval)) -}}
+      {{- if $debug -}}
+        {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+      {{- end -}}
+      {{- $defaultimage = $newimage -}}
+    {{- end -}}
+    {{- $defaultwidth = $defaultimage.Width -}}
+    {{- if $size -}}
+      {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
+    {{- end -}}
+
+  {{- else -}}{{/* starting with size/width, so more complicated... */}}
+
   {{- end -}}{{/* else, not $height */}}
+
+  {{/* Create srcset entries as an array */}}
+  {{- $srcset := slice -}}
+  {{- range $i := $imagelist -}}
+    {{- $srcset = $srcset | append (printf "%s %dw" $i.RelPermalink $i.Width) -}}
+  {{- end -}}
+  {{- $srcsetString := "" -}}
+  {{/* Only include srcset if there is more than one */}}
+  {{- if gt (len $imagelist) 1 -}}
+    {{- $srcsetString = (delimit $srcset ", ") -}}
+  {{- end -}}
+    {{- if $debug }}{{ warnf "figset: imagelist=\"%v\"  srcset=%v  srcsetString=\"%s\"" $imagelist $srcset $srcsetString }}{{ end -}}
 
   {{- $lightboxstring := "" -}}
   {{- if $gallery -}}
@@ -348,44 +364,27 @@
     {{/* FIXME passing RelPermalink as the gallery name seems a bit weird, but how else to make it unique? */}}
     {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
   {{- end -}}
-  {{ if $debug }}{{ warnf "figset: lbstring=%s  gallery=%s\n" $lightboxstring $gallery }}{{ end }}
-
-  {{/* Create srcset entries as a dict */}}
-  {{- $srcset := slice -}}
-  {{- range $i := $imagelist -}}
-    {{- $srcset = $srcset | append (printf "%s %dw" $i.RelPermalink $i.Width) -}}
+  {{- if and $height $lightbox -}}
+    {{- with $srcsetString }}{{ $lightboxstring = printf "%s x1 data-srcset=\"%s\" x2 data-sizes=\"%s\"" $lightboxstring . $sizesString }}{{ end -}}
   {{- end -}}
+  {{- if $debug }}{{ warnf "figset: lbstring=%s" $lightboxstring }}{{ end -}}
 
   {{- $anchor := "" -}}
-  {{- if $lightboxstring -}}
-    {{/* TODO maybe -- let the JS extract the image url/name from the fig 
-      -- YES, should work now 
-    {{- $lightboxstring = printf "%s data-image='%s'" $lightboxstring $defaultimage.RelPermalink -}}
-
-    {{ if $debug }}{{ warnf "figset: adding to lbs: url=|%s| alt=|%s| title=|%s|" $url $alt $title }}{{ end }}
-    {{- with $url -}}{{- $lightboxstring = printf "%s data-url=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
-    {{- with $alt -}}{{- $lightboxstring = printf "%s data-alt=\"%s\"" $lightboxstring (htmlEscape .) -}}{{- end -}}
-    {{- with $title }}{{ $lightboxstring = printf "%s data-title=\"%s\"" $lightboxstring (htmlEscape .) }}{{ end -}}
-    */}}
-    {{/* FIXME?? Use default image for href in case the clever JS doesn't work */}}
-
-  {{- else if $url -}}{{/* Link but no lightbox -- wrap with <a> */}}
+  {{- if and $url (not $lightboxstring) -}}{{/* Link but no lightbox -- wrap with <a> */}}
     {{ $anchor = printf "<a href=\"%s\">" $url }}
   {{- end -}}
 
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
-    {{/* If simple height specified, just a simple image */}}
-    {{ if or (not $height) ($lightbox) -}}
-      {{/* Only include srcset if there is more than zero */}}{{/* FIXME!! */}}
-      {{ if gt (len $imagelist) 0 }}
-        srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
-      {{- end -}}
-      {{- with $sizeString }} sizes="{{ . }}"{{ end }}
-    {{- end }}
+    {{ if $height }}{{/* set just the width because small images have top/bottom margins */}}
+      width="{{ $defaultwidth }}px"
+    {{ else }}
+      {{/* This still doesn't work: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"{{ *   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
+      {{ with $srcsetString }}srcset="{{ . | safeHTMLAttr }}"{{ end }}
+      {{ with $sizesString }}sizes="{{ . | safeHTMLAttr }}"{{ end }}
+    {{ end }}
     src="{{ $defaultimage.RelPermalink }}" 
-    {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
     {{- with $title }} title="{{- . | safeHTMLAttr -}}" {{- end -}}
     {{- with $imagemargincss -}} style="{{ . | safeCSS }}"{{- end -}}

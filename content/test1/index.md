@@ -3,10 +3,11 @@ Title: Test 1
 Menu: main
 ---
 
-Blurb before row of four.
+Blurb before row of five.
 
-{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true >}}
-  {{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
+{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=false >}}
+{{<figset debug=true name="image with spaces.jpg" >}}
+  {{<figset name="big image with spaces.jpg" size=small >}}
   {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
   {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
   {{<figset name="notfound-800.jpg" xsize=small >}}
@@ -14,7 +15,7 @@ Blurb before row of four.
 
 Blurb before three figsets not in a figrow:
 
-{{<figset name="img20220824_095038_DRO-800.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
+{{<figset name="big image with spaces.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
 {{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100" lightbox=true position=c >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
@@ -59,17 +60,17 @@ Blurb after figset, before head2.
 ## Height in a row
 
 {{<figrow gallery=test2 justify=space-around height="120" align=start size=thumbnail caption="So shaken as we are, so wan with care..." >}}
-{{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
-{{<figset image="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset name="rt64-Cnc16cp16RbE0.05Pga32n16r3w16l3k2i3m3b3d0e1x0z0o0g1-Tg10,Tb10,Tr10-pi1.00.jpg" >}}
+{{<figset name="big image with spaces.jpg" size=small >}}
+{{<figset name="img20220824_105444_DRO-800.jpg"  >}}
+{{<figset debug=true name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
-{{<figset image="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset name="rt64-Cnc16cp16RbE0.05Pga32n16r3w16l3k2i3m3b3d0e1x0z0o0g1-Tg10,Tb10,Tr10-pi1.00.jpg" >}}
+{{<figset name="big image with spaces.jpg" size=small >}}
+{{<figset name="img20220824_105444_DRO-800.jpg"  >}}
+{{<figset name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
-{{<figset image="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset name="rt64-Cnc16cp16RbE0.05Pga32n16r3w16l3k2i3m3b3d0e1x0z0o0g1-Tg10,Tb10,Tr10-pi1.00.jpg" >}}
+{{<figset name="big image with spaces.jpg" size=small >}}
+{{<figset name="img20220824_105444_DRO-800.jpg"  >}}
+{{<figset name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
 {{</figrow>}}  
 
