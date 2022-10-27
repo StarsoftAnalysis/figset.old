@@ -3,7 +3,7 @@ Title: Test 3 Errors
 Menu: main
 ---
 
-{{<figrow gallery=test1 justify="start" size=wrong debug=true >}}
+{{<figrow gallery=test1 justify="start" size=wrong debug=false >}}
 {{<figset name="img20220824_095038_DRO-800.jpg" size=average title="<Grand Title>" alt="Alt's good" >}}
 {{<figset image="img20220824_105444_DRO-800.jpg" position=top  >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
@@ -12,7 +12,7 @@ Menu: main
 
 Captions:
 
-{{<figrow gallery=test1 justify="start" size=small debug=true >}}
+{{<figrow gallery=test1 justify="start" size=small debug=false >}}
 {{<figset name="img20220824_105444_DRO-800.jpg" caption="Long caption to make sure it's all hanging tothether" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" caption="Flksajdf lksjd lskjdf lskdj lskdfj lsdkfj lskdjf lskdfj" >}}
 {{</figrow>}}  

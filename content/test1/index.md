@@ -9,14 +9,14 @@ Blurb before row of four.
   {{<figset name="img20220824_095038_DRO-800.jpg" size=small >}}
   {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
   {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-  {{<figset name="notfound-800.jpg" size=small >}}
+  {{<figset name="notfound-800.jpg" xsize=small >}}
 {{</figrow>}}  
 
 Blurb before three figsets not in a figrow:
 
-{{<figset name="img20220824_095038_DRO-800.jpg" debug=true size=small url=self selfsize=750 caption="url=self750" position=l >}}
-{{<figset name="img20220824_105444_DRO-800.jpg" debug=true size=small height=100 caption="height=100" lightbox=true position=c >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" debug=true size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
+{{<figset name="img20220824_095038_DRO-800.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100" lightbox=true position=c >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
 Blurb between row of three and single figset. On left with wrapped text.
 

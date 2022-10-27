@@ -8,6 +8,7 @@
     - put 'figrow true' in the figset partial's dict, otherwise the figcaptions get all narrow -- still don't know why exactly.
 
   TODO:
+  * height and lightbox -- need srcset!
   * pass srcset to lb as data-imagelist!?
   * option to clear before rather than after?
   * Use separate file for calcs??
@@ -102,13 +103,12 @@
 {{- $position := lower .position -}}{{/* See below for default */}}
 {{- $size := lower .size | default "medium" -}}
 {{- $selfsize := (int (.selfsize | default 2000)) -}}
-{{- $maxwidth := (int (.maxwidth | default 2000)) -}}
 {{- $title := .title | default "" }}
 {{- $caption := .caption | default "" -}}
 {{- $url := .url | default "" -}}  {{/* $image.Params.Url | default "" -}}{{/* FIXME is this right? will make the link go to the orig image? Need to test if $image is set */}}
 {{- $alt := .alt | default $caption | default $title | default "image" -}}
 {{- $gallery := .gallery | default "" }}
-{{- $lightbox := .lightbox | default false -}}
+{{- $lightbox := .lightbox | default $gallery -}}{{- /* lightbox is true if any gallery name supplied */ -}}
 {{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
 {{- $align := lower .align }}{{/* See below for default */}}
 {{- $class1 := .class1 -}}
@@ -119,21 +119,25 @@
 {{- $debug := .debug | default false -}}
 
 {{ if $debug }}{{ warnf "figset: i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow }}{{ end }}
-{{ if $debug }}{{ warnf "\nfigset: .page=%s  name=%s image=%v\n" .page.Page $name $image }}{{ end }}
+{{ if $debug }}{{ warnf "figset: .page=%s  name=%s image=%v\n" .page.Page $name $image }}{{ end }}
 
 {{- if $image -}}
   {{- $origwidth := $image.Width -}}
   {{- $origheight := $image.Height -}}
   {{- $aspect := div (float $origwidth) (float $origheight) -}}
   {{- $origsize := int (math.Max $origwidth $origheight) -}}
-  {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
+
   {{/* Just a big list, in descending order (so that default size is first, and so that JS (i.e. lightboxSSA) can handle the list easily) */}} {{/* REMOVE -- it's in _imagesize */}}
-  {{- $allwidths := slice 1800 1600 1400 1200 1000 800 600 400 200 -}}{{/* REMOVE -- it's in _imagesize */}}
+  {{- $allwidths := slice 3200 2800 2400 2000 1800 1600 1400 1200 1000 800 600 400 200 -}}{{/* REMOVE -- it's in _imagesize */}}
+  {{- $maxwidth := (int (.maxwidth | default (index $allwidths 0))) -}}
+  {{- if gt $maxwidth $origwidth -}}{{- $maxwidth = $origwidth -}}{{- end -}}
   {{ if $debug }}{{ warnf "figset: origw,h=%d,%d aspect=%.2f origsize=%d ssize=%d maxwidth=%d\n" $origwidth $origheight $aspect $origsize $selfsize $maxwidth }}{{ end }}
 
   {{- $heightval := 0 -}}
   {{- $heightunit := "" -}}
-  {{- $imagelist := slice -}}{{/* empty slice */}}
+  {{- $defaultimage := "" -}}
+  {{- $defaultwidth := 0  -}}
+  {{- $imagelist := slice -}}
   {{- $imagemargincss := "" -}}
   {{- $sizes := "" -}}
   {{- $sizeString := "" -}}  
@@ -232,7 +236,8 @@
     {{- if gt $heightval $origheight -}}
       {{/* don't want to expand image, so give it a top/bottom margin */}}
       {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
-      {{- $imagelist = $imagelist | append $image -}}
+      {{- /* $imagelist = $imagelist | append $image */ -}}
+      {{- $defaultimage = $image -}}
     {{- else -}}
       {{/* resize to the exact size required */}}
       {{/* See [image] section of config.toml for image processing options */}}
@@ -240,7 +245,8 @@
       {{- if $debug -}}
         {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
       {{- end -}}
-      {{- $imagelist = $imagelist | append $newimage -}}
+      {{- /* $imagelist = $imagelist | append $newimage */ -}}
+      {{- $defaultimage = $newimage -}}
     {{- end -}}
     {{- if $size -}}
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
@@ -303,15 +309,26 @@
     {{ if $debug }}{{ warnf "figset:  image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
 
     {{/* NOTE: these sizes are taken from Bootstrap */}}
-    {{/* FIXME only included sizes that we're using... */}}
-
     {{/* $sizeString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) */}}
     {{ $sizeString = delimit $sizestrings ", " }}
     {{ if $debug }}{{ warnf "figset: sizeString=%s\n" $sizeString }}{{ end }}
 
-    <!-- <p>{{ $allwidths }} max {{ $maxwidth }} orig {{ $origwidth }} -->
+    {{/* Create range of image sizes not greater than maxwidth, starting with the original image */}}
+    {{ if le $origwidth $maxwidth }}
+      {{ $imagelist = $imagelist | append $image }}
+      {{ $defaultimage = $image }}
+      {{ $defaultwidth = $origwidth }}
+    {{ else }}
+      {{- $newimage := $image.Resize (printf "%dx jpg" $maxwidth) -}}
+      {{- if $debug -}}
+        {{- $newimage = $newimage.Filter (images.Text (printf "resized %dx jpg" $maxwidth) (dict "color" "#ff0000" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
+      {{- end -}}
+      {{ $imagelist = $imagelist | append $newimage }}
+      {{ $defaultimage = $newimage }}
+      {{ $defaultwidth = $maxwidth }}
+    {{ end }}
     {{- range $w := $allwidths -}}
-      {{- if le $w $maxwidth -}}
+      {{- if and (le $w $maxwidth) (ne $w $defaultwidth) -}}
         {{ if $debug }}{{ warnf "figset: maxwidth=%v w=%v appending after resize %dx" $maxwidth $w $w }}{{ end }}
         {{- $newimage := $image.Resize (printf "%dx jpg" $w) -}}
         {{- if $debug -}}
@@ -321,14 +338,8 @@
       {{- end -}}
     {{- end -}}
     {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
-    {{- if eq (len $imagelist) 0 -}}
-      {{ if $debug }}{{ warnf "figset: imagelist list empty -- just using the original image" }}{{ end }}
-      {{- $imagelist = $imagelist | append $image -}}
-    {{- end -}}
 
   {{- end -}}{{/* else, not $height */}}
-
-  {{- $defaultimage := index $imagelist 0 -}}{{/* Just use the first, i.e. largest */}}
 
   {{- $lightboxstring := "" -}}
   {{- if $gallery -}}
@@ -365,14 +376,14 @@
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
-    {{- /* If simple height specified, just a simple image */ -}}
-    {{- if not $height -}}
-      {{/* Only include srcset if there is more than zero */}}
+    {{/* If simple height specified, just a simple image */}}
+    {{ if or (not $height) ($lightbox) -}}
+      {{/* Only include srcset if there is more than zero */}}{{/* FIXME!! */}}
       {{ if gt (len $imagelist) 0 }}
         srcset="{{ (delimit $srcset ", ") | safeHTMLAttr }}"
       {{- end -}}
-      {{- with $sizeString }} sizes="{{ $sizeString }}"{{- end }}
-    {{- end -}}
+      {{- with $sizeString }} sizes="{{ . }}"{{ end }}
+    {{- end }}
     src="{{ $defaultimage.RelPermalink }}" 
     {{/* This doesnt work -- images get too big: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
