@@ -18,7 +18,7 @@ Blurb before row of five.
 Blurb before three figsets not in a figrow:
 
 {{<figset name="big image with spaces.jpg" debug=true size=small url=self selfsize=750 caption="url=self750" position=l >}}
-{{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100" lightbox=true position=c >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100 lb=true" lightbox=true position=c >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 
 Blurb between row of three and single figset. On left with wrapped text.

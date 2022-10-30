@@ -6,20 +6,21 @@ div.figrow {
   display: flex; 
   flex-direction: row; 
   flex-wrap: wrap;
-  figure { display: table; }
-  img { display: table-cell; }
-  figcaption { display: table-caption; }
 }
 
 figure.figset {
   margin: 0 2vw 2vw; // maybe should be 0 on narrow screens
   width: fit-content;
   //? gets overridden within a row    display: inline-table;
+  display: table;
   figcaption {
-    //display: table-cell;
+    display: table-caption;
     caption-side: bottom;
   }
-  img { max-width: 100% }
+  img { 
+    max-width: 100%;
+    display: table-cell;
+  }
 }
 
 // figrow justify-content classes
