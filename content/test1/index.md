@@ -1,16 +1,18 @@
 ---
 Title: Test 1
 Menu: main
+LightboxSSA:
+  max_width: 100
+  max_height: 100
 ---
 
 Blurb before row of five.
 
-{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=false >}}
-{{<figset debug=true name="image with spaces.jpg" >}}
+{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true maxwidth=4000 url=self >}}
   {{<figset name="big image with spaces.jpg" size=small >}}
   {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
+  {{<figset name="alhambra.png" caption="La Alhambra" size=small >}}
   {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-  {{<figset name="notfound-800.jpg" xsize=small >}}
 {{</figrow>}}  
 
 Blurb before three figsets not in a figrow:
@@ -21,8 +23,10 @@ Blurb before three figsets not in a figrow:
 
 Blurb between row of three and single figset. On left with wrapped text.
 
+{{<figset debug=false name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
+  {{<figset name="notfound-800.jpg" xsize=small >}}
 
 So shaken as we are...
 So shaken as we are...
@@ -62,7 +66,7 @@ Blurb after figset, before head2.
 {{<figrow gallery=test2 justify=space-around height="120" align=start size=thumbnail caption="So shaken as we are, so wan with care..." >}}
 {{<figset name="big image with spaces.jpg" size=small >}}
 {{<figset name="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset debug=true name="image with spaces.jpg" >}}
+{{<figset debug=false name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
 {{<figset name="big image with spaces.jpg" size=small >}}
 {{<figset name="img20220824_105444_DRO-800.jpg"  >}}
@@ -78,12 +82,12 @@ Blurb after figset, before head2.
 ## Head 2
 
 Last figset before footer:
-{{<figrow gallery=test1 clear=false >}}
+{{<figrow gallery=test3 clear=false >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{</figrow>}}  
 
 ## Testing classes
-{{<figrow gallery=test1 clear=false class="figset-test1" figsetclass="figset-test2" >}}
+{{<figrow gallery=test4 clear=false class="figset-test1" figsetclass="figset-test2" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{<figset name="img20220826_105417_DRO-800.jpg"  size=small >}}
 {{</figrow>}}  

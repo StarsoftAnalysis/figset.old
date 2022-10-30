@@ -5,7 +5,7 @@ menu: main
 
 ## Height
 
-{{<figrow debug=true id=figrow1 class="figrowclass1" figsetclass="figsetclass1" gallery=test1 justify=evenly caption="sdlfkj lk jkj lskdfj lsdkfj sldkfj lskdjf" xalign="start" height=200 xsize=thumbnail >}}
+{{<figrow debug=false id=figrow1 class="figrowclass1" figsetclass="figsetclass1" gallery=test1 justify=evenly caption="sdlfkj lk jkj lskdfj lsdkfj sldkfj lskdjf" xalign="start" height=200 xsize=thumbnail >}}
 {{<figset name="FordingbridgeClockTower.jpg" >}}
 {{<figset name="P1130500.JPG" >}}
 {{<figset name="P1130501.JPG" xsize=small >}}
@@ -22,7 +22,7 @@ menu: main
 
 ## No Height, random class and figsetclass
 
-{{<figrow debug=true id=figrow2 gallery=test2 class="border rounded fred border-danger p-3" figsetclass="border-3 font-italic " justify=EVEN xcaption="So shaken as we are, so wan with care" xalign="baseline" xheight=200 size=thumbnail >}}
+{{<figrow debug=false id=figrow2 gallery=test2 class="border rounded fred border-danger p-3" figsetclass="border-3 font-italic " justify=EVEN xcaption="So shaken as we are, so wan with care" xalign="baseline" xheight=200 size=thumbnail >}}
 {{<figset name="FordingbridgeClockTower.jpg" caption="sldkfj sldk sldk jsldk jlk" >}}
 {{<figset name="P1130500.JPG" class="font-weight-bold" caption="guns and roses" align="baseline" >}}
 {{<figset name="P1130501.JPG" id="fblue" caption="anything you Like alskdfj lskj slkdfj sldkf jsldkfj sldkfj sldkfj l" xsize=small >}}
