@@ -15,9 +15,20 @@ Blurb before row of five.
   {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
 {{</figrow>}}  
 
+### Figrow of 1
+{{<figrow gallery=row1 justify=center >}}
+  {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
+{{</figrow>}}  
+
+### Figrow of 2
+{{<figrow gallery=row2 justify=center debug=true >}}
+  {{<figset name="img20220826_105417_DRO-800.jpg" url="https://avonvalleyshed.org.uk" caption="url=avs" size=small >}}
+  {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
+{{</figrow>}}  
+
 Blurb before three figsets not in a figrow:
 
-{{<figset name="big image with spaces.jpg" debug=true size=small url=self selfsize=750 caption="url=self750" position=l >}}
+{{<figset name="big image with spaces.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
 {{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100 lb=true" lightbox=true position=c >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 

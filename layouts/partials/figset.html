@@ -367,6 +367,7 @@
   {{- end -}}
   {{- if $lightboxstring -}}
     {{- $lightboxstring = printf "%s data-aspect=%f" $lightboxstring $aspect -}}
+    {{- with $url }}{{ $lightboxstring = printf "%s data-url=%s" $lightboxstring . }}{{ end -}}
   {{- end -}}
   {{- if and $height $lightbox -}}
     {{- with $srcsetString }}{{ $lightboxstring = printf "%s data-srcset=\"%s\"" $lightboxstring . }}{{ end -}}
