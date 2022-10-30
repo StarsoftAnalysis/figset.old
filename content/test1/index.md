@@ -8,7 +8,7 @@ LightboxSSA:
 
 Blurb before row of five.
 
-{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true maxwidth=4000 url=self >}}
+{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=false maxwidth=4000 url=self >}}
   {{<figset name="big image with spaces.jpg" size=small >}}
   {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
   {{<figset name="alhambra.png" caption="La Alhambra" size=small >}}
@@ -17,7 +17,7 @@ Blurb before row of five.
 
 Blurb before three figsets not in a figrow:
 
-{{<figset name="big image with spaces.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
+{{<figset name="big image with spaces.jpg" debug=true size=small url=self selfsize=750 caption="url=self750" position=l >}}
 {{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100" lightbox=true position=c >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
 

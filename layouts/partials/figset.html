@@ -365,11 +365,13 @@
     {{/* FIXME passing RelPermalink as the gallery name seems a bit weird, but how else to make it unique? */}}
     {{- $lightboxstring = printf "data-lightbox='%s'" $defaultimage.RelPermalink -}}
   {{- end -}}
-  {{- $lightboxstring = printf "%s data-aspect=%f" $lightboxstring $aspect -}}
-  {{- if and $height $lightbox -}}
-    {{- with $srcsetString }}{{ $lightboxstring = printf "%s data-srcset=\"%s\" data-aspect=%f" $lightboxstring . $aspect }}{{ end -}}
+  {{- if $lightboxstring -}}
+    {{- $lightboxstring = printf "%s data-aspect=%f" $lightboxstring $aspect -}}
   {{- end -}}
-  {{- if $debug }}{{ warnf "figset: lbstring=%s" $lightboxstring }}{{ end -}}
+  {{- if and $height $lightbox -}}
+    {{- with $srcsetString }}{{ $lightboxstring = printf "%s data-srcset=\"%s\"" $lightboxstring . }}{{ end -}}
+  {{- end -}}
+  {{- if $debug }}{{ warnf "figset: url='%s'  lbstring='%s'" $url $lightboxstring }}{{ end -}}
 
   {{- $anchor := "" -}}
   {{- if and $url (not $lightboxstring) -}}{{/* Link but no lightbox -- wrap with <a> */}}
