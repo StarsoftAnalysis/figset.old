@@ -349,7 +349,11 @@
   {{/* Create srcset entries as an array */}}
   {{- $srcset := slice -}}
   {{- range $i := $imagelist -}}
+  {{ if in $i.RelPermalink "bimage" }}
+    {{- $srcset = $srcset | append (printf "%sx %dw" $i.RelPermalink $i.Width) -}}
+    {{ else }}
     {{- $srcset = $srcset | append (printf "%s %dw" $i.RelPermalink $i.Width) -}}
+    {{end}}
   {{- end -}}
   {{- $srcsetString := "" -}}
   {{/* Only include srcset if there is more than one */}}

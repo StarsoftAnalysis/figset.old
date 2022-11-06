@@ -2,17 +2,17 @@
 Title: Test 1
 Menu: main
 LightboxSSA:
-  max_width: 100
-  max_height: 100
+  max_width: 80
+  max_height: 80
 ---
 
 Blurb before row of five.
 
-{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=false maxwidth=4000 url=self >}}
-  {{<figset name="big image with spaces.jpg" size=small >}}
-  {{<figset name="img20220824_105444_DRO-800.jpg" caption="trees & flowers" size=small >}}
-  {{<figset name="alhambra.png" caption="La Alhambra" size=small >}}
-  {{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
+{{<figrow gallery=test1 justify=center size=thumbnail caption="words on more than one line maybe" debug=true maxwidth=800 xurl=self >}}
+  {{<figset name="big image with spaces.jpg" size=small caption="0: big image with spaces">}}
+  {{<figset name="img20220824_105444_DRO-800.jpg" caption="1: trees & flowers" size=small >}}
+  {{<figset name="alhambra.png" caption="2: La Alhambra" size=small >}}
+  {{<figset name="img20220826_105417_DRO-800.jpg" caption="3: danger men at work" size=small >}}
 {{</figrow>}}  
 
 ### Figrow of 1
