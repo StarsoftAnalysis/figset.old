@@ -350,10 +350,11 @@
   {{- $srcset := slice -}}
   {{- range $i := $imagelist -}}
   {{ if in $i.RelPermalink "bimage" }}
+    {{/* Temp hack to see how missing image is handled */}}
     {{- $srcset = $srcset | append (printf "%sx %dw" $i.RelPermalink $i.Width) -}}
-    {{ else }}
+  {{ else }}
     {{- $srcset = $srcset | append (printf "%s %dw" $i.RelPermalink $i.Width) -}}
-    {{end}}
+  {{end}}
   {{- end -}}
   {{- $srcsetString := "" -}}
   {{/* Only include srcset if there is more than one */}}

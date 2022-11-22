@@ -3,7 +3,11 @@
 #ip=192.168.1.7
 ip=localhost
 ip=192.168.1.63
-#ip=`~/utils/netlist --4 --scope=global`
+ip=192.168.1.58
+#ip=192.168.158.110
+# just want the first IP -- don't know why using () does the trick
+ips=(`~/utils/netlist --4 --scope=global`)
+
 port=1314
 dest=served
 hugo="/home/chris/dev/hugo-summary-fix-2/hugo"
