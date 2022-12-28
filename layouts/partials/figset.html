@@ -1,7 +1,7 @@
 {{/*
   figset partial, version of figure with srcsetting.
 
-  Version 0.9.3  22/11/2022
+  Version 0.9.4sameheight  28/12/2022
 
   DON'T FORGET!!
   * when using figrow_start partial from another template:
@@ -18,9 +18,6 @@
   * url/link -- option e.g. url=self to link to selfsize version of same image
     - rename url to link?
   * fix 'null' when hovering over image in carousel
-  * height is fixed no. of pixels, i.e. not responsive, which is rubbish.  at the moment can use width=nnpx to make
-    the caption fit the width of the picture.
-  * try height with vw/vh units...
   * allow user to specify hugo's image processing and filtering options.  How will that interact with the resizing that we're doing?  Maybe not the resizing options, then.  Just: rotate (e.g. 'r90' when resizing); output format (jpeg, png, webp); quality;   But wait!  These can be set globally in config.toml -- does the user need per-image settings?
      ... overlay (for watermark/logo)
      ... see https://gohugo.io/functions/images/#text
@@ -40,16 +37,14 @@
   * move error handling to shortcodes? -- see https://gohugo.io/templates/shortcode-templates/#error-handling-in-shortcodes
   * NO: could do a percentage if we knew how many are in the row (can the parent tell us?)
   * Move anchor inside figure
-  * FIXME: imagewidthstring only used with height, and it's not needed then
   * 'clear' option for figset (as done for figrow) -- see type2 test.
   * NEXT: don't do flex if no ROW! OR do use a flex div to do the l/r/center!? -- would need another div that the figrow didn't provide.
-  * default align-self to start if height
   * FIXME: mx-auto for non-figrow centred image doesn't work. (e.g. test1)
   * caption alignment -- need to match figrow's justify?   or does figset have a justify too?
   * need left/center/right options for captions -- in figset  and margin:0 auto for image if centred
 
   This can be used from another template, with args passed in as a dict, e.g.
-    {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" "#01589B" "width" 10 "height" 20 ) -}}
+    {{- partial "figset.html" (dict "page" . "name" "thingy.jpg" "size" "medium" ) -}}
   or via the corresponding shortcode:
     {{< figset name="fred.png" size="medium" >}}
 
@@ -70,12 +65,7 @@
     .url -- url to link to -- on second click if galleried, or 'self'
     .gallery - name of gallery -- just has to be the same on a group of figures to make them a gallery - implies lightbox
     .lightbox - anything truthy to add lightbox effect without making it a gallery
-    .height -- only px units so far. 
-        -- ?units -- maybe need responsive values.  Overrides size, for use (e.g. from figrow) to make a row of images line up.
-        -- allow: px  em  % .... ...  remember at this stage we have no idea of screen size or shape
-            -- if %, can calculate width as % (of container) and then estimate sizes as vw -- or maybe just specify sizes as vh
-            -- if px, calculate width as px, then need to do media things for sizes, copying transitions from those used for bootstrap
-            -- if em, depends on font size, so maybe don't handle that.  Or assume 16px
+    .sameheight - true to make all images with the same .size value the same height 
     .class1 -- classes from parent figrow
     .class2 -- classes for this figset
     .capclass -- classes for figcaption
@@ -110,7 +100,7 @@
 {{- $maxwidth := int (.maxwidth | default 800) -}}
 {{- $gallery := .gallery | default "" }}
 {{- $lightbox := .lightbox | default $gallery -}}{{- /* lightbox is true if any gallery name supplied */ -}}
-{{- $height := lower .height | default "" -}}{{/* string may have units e.g. 100px */}}
+{{- $sameheight := .sameheight | default false -}}
 {{- $align := lower .align }}{{/* See below for default */}}
 {{- $class1 := .class1 -}}
 {{- $class2 := .class2 -}}
@@ -119,7 +109,7 @@
 {{- $clear := .clear | default "none" -}}
 {{- $debug := .debug | default false -}}
 
-{{ if $debug }}{{ warnf "figset: i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v h=%v fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $height $figrow }}{{ end }}
+{{ if $debug }}{{ warnf "figset: i=%v p=%s s=%s t=%s c=%s u=%s a=%s g=%s l=%v sh=%t fr=%t" $image $position $size $title $caption $url $alt $gallery $lightbox $sameheight $figrow }}{{ end }}
 {{ if $debug }}{{ warnf "figset: .page=%s  name=%s image=%v\n" .page.Page $name $image }}{{ end }}
 
 {{- if $image -}}
@@ -206,7 +196,7 @@
     {{ end }}
     {{ if not $asclass }}
       {{ $dft_as := "figset-ascenter" }}
-      {{ if $height }}
+      {{ if $sameheight }}
         {{ $dft_as = "figset-astart" }}
       {{ end }}
       {{ if $align }}
@@ -215,10 +205,6 @@
       {{ $asclass = $dft_as }}
     {{ end }}
   {{ end }}
-
-  {{/* Do the srcset/sizes preparation unless height is set and there's no lightbox */}}
-  {{/* FIXME srcset/sizes are only used by lightbox -- perhaps do them as data-srcset and data-sizes for height */}}
-  {{ if or $lightbox (not $height) }}
 
     {{/* 
       Image sizes are : thumbnail  small  medium  large  full -- any abbreviation is enough. 
@@ -230,6 +216,7 @@
 
       Each real image, with aspect ratio R', should have the same area, so its height is sqrt(A/R')
       and its width is its height*R'
+      (Unless $sameheight, in which case we just take the height of the ideal image.)
     */}}
     {{/*       screen width:  1200+ 992+ 768+ 576+ else */}}
     {{ $cutoffs      := slice 1200  992  768  576    0 }}
@@ -254,28 +241,26 @@
       {{ warnf "figset: invalid value for size '%s' -- using 'medium' instead." $size }}
     {{ end }}
 
-    {{/* now only one set of calcs required */}}
-    {{ $idealAspect  := 1.4 }}
-    {{ $areas := slice }}
-    {{ $widths := slice }}
+    {{ $idealAspect  := 1.4 }}{{/* FIXME 1.5 ? */}}
     {{ $sizestrings := slice }}
     {{ range $i, $w := $idealW }}
-      {{ $areas = $areas | append (int (math.Round (div (mul $w $w) $idealAspect))) }}
-      {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
-      {{ $y := math.Sqrt (div $area $aspect) }}
-      {{ if $debug }}{{ warnf "figset:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) }}{{ end }}
+      {{ $y := 0 }}
+      {{ if $sameheight }}
+        {{ $y = div $w $idealAspect }}
+      {{ else }}
+        {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
+        {{ $y = math.Sqrt (div $area $aspect) }}
+      {{ end }}
+      {{/* ?? if $debug }}{{ warnf "figset:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) }}{{ end */}}
       {{ $width := (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
-      {{ $widths = $widths | append $width }}
       {{ if eq (index $cutoffs $i) 0 }}
         {{ $sizestrings = $sizestrings | append (printf "%dvw" $width) }}
       {{ else }}
         {{ $sizestrings = $sizestrings | append (printf "(min-width: %dpx) %dvw" (index $cutoffs $i) $width) }}
       {{ end }}
     {{ end }}
-    {{ if $debug }}{{ warnf "figset: image=%v .size=%v $size=%v idealW=%v  areas=%v  widths=%v\n" $image .size $size $idealW $areas $widths }}{{ end }}
+    {{ if $debug }}{{ warnf "figset: image=%v .size=%v $size=%v idealW=%v\n" $image .size $size $idealW }}{{ end }}
 
-    {{/* NOTE: these sizes are taken from Bootstrap */}}
-    {{/* $sizesString = printf "(min-width: 1200px) %dvw, (min-width: 992px) %dvw, (min-width: 768px) %dvw, (min-width: 576px) %dvw, %dvw" (index $widths 0) (index $widths 1) (index $widths 2) (index $widths 3) (index $widths 4) */}}
     {{ $sizesString = delimit $sizestrings ", " }}
     {{ if $debug }}{{ warnf "figset: sizesString=%s\n" $sizesString }}{{ end }}
 
@@ -305,32 +290,31 @@
     {{- end -}}
     {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
 
-  {{ end }}{{/* if doing srcset/sizes stuff */}}
 
-  {{/* height overrides size */}}
-  {{/* height-limited row needs a lot of work -- e.g. non-px suffixes */}}
+{{/*
+  {{* height-limited row needs a lot of work -- e.g. non-px suffixes *}}
 
   {{- if $height -}}
 
-    {{/* We can only handle pixels as units -- either "123px" or "123" */}}
-    {{- $heightunit = "px" -}}{{/* default if no (or unknown) units */}}
+    {{* We can only handle pixels as units -- either "123px" or "123" *}}
+    {{- $heightunit = "px" -}}{{* default if no (or unknown) units *}}
     {{- if strings.HasSuffix $height "px" -}}
       {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
-    {{/* $heightunit is never used!
+    {{* $heightunit is never used!
     {{- else if strings.HasSuffix $height "vh" -}}
       {{- $heightval = int (strings.TrimSuffix "vh" $height) -}}
       {{- $heightunit = "vh" -}}
-    */}}
+    *}}
     {{- else -}}
-      {{- $heightval = int $height -}}{{/* FIXME this will give an error with any unknown suffix */}}
+      {{- $heightval = int $height -}}{{* FIXME this will give an error with any unknown suffix *}}
     {{- end -}}
     {{- if gt $heightval $origheight -}}
-      {{/* don't want to expand image, so give it a top/bottom margin */}}
+      {{* don't want to expand image, so give it a top/bottom margin *}}
       {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
       {{- $defaultimage = $image -}}
     {{- else -}}
-      {{/* resize to the exact size required */}}
-      {{/* See [image] section of config.toml for image processing options */}}
+      {{* resize to the exact size required *}}
+      {{* See [image] section of config.toml for image processing options *}}
       {{- $newimage := $image.Resize (printf "x%d jpg" (int $heightval)) -}}
       {{- if $debug -}}
         {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
@@ -342,9 +326,10 @@
       {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
     {{- end -}}
 
-  {{- else -}}{{/* starting with size/width, so more complicated... */}}
+  {{- else -}}{{* starting with size/width, so more complicated... *}}
 
-  {{- end -}}{{/* else, not $height */}}
+  {{- end -}}{{* else, not $height *}}
+*/}}
 
   {{/* Create srcset entries as an array */}}
   {{- $srcset := slice -}}
@@ -375,7 +360,7 @@
     {{- $lightboxstring = printf "%s data-aspect=%f" $lightboxstring $aspect -}}
     {{- with $url }}{{ $lightboxstring = printf "%s data-url=%s" $lightboxstring . }}{{ end -}}
   {{- end -}}
-  {{- if and $height $lightbox -}}
+  {{- if and $sameheight $lightbox -}}  {{/* FIXME still need this?  was $height... */}}
     {{- with $srcsetString }}{{ $lightboxstring = printf "%s data-srcset=\"%s\"" $lightboxstring . }}{{ end -}}
   {{- end -}}
   {{- if $debug }}{{ warnf "figset: url='%s'  lbstring='%s'" $url $lightboxstring }}{{ end -}}
@@ -388,13 +373,8 @@
   {{ with $anchor }}{{ safeHTML . }}{{ end }}
   <figure {{ with $id }}id="{{ . }}"{{ end }} class="figset {{ $posclass }} {{ $asclass }} {{ $class1 }} {{ $class2 }}" {{ $lightboxstring | safeHTMLAttr }}>
   <img loading=lazy class="figset-img"
-    {{ if $height }}{{/* set just the width because small images have top/bottom margins */}}
-      width="{{ $defaultwidth }}px"
-    {{ else }}
-      {{/* This still doesn't work: width="{{ $defaultimage.Width }}" height="{{ $defaultimage.Height }}"{{ *   see https://chipcullen.com/what-width-and-height-attributes-to-use-with-responsive-images/ */}}
-      {{ with $srcsetString }}srcset="{{ . | safeHTMLAttr }}"
-        {{ with $sizesString }}sizes="{{ . | safeHTMLAttr }}"{{ end }}
-      {{ end }}
+    {{ with $srcsetString }}srcset="{{ . | safeHTMLAttr }}"
+      {{ with $sizesString }}sizes="{{ . | safeHTMLAttr }}"{{ end }}
     {{ end }}
     src="{{ $defaultimage.RelPermalink }}" 
     {{- with $alt }} alt="{{- . | safeHTMLAttr -}}" {{- end -}}{{/* FIXME is it safe?? */}}
