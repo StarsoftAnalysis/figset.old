@@ -91,3 +91,21 @@ footer .row {
 //ol, ul {
 //  padding-left: initial;
 //}
+
+
+
+// Figset dev -- testing ids and classes
+#id1 {
+    border: 3px solid blue;
+}
+
+.figrowclass1 {
+    color: green;
+}
+
+.figsetclass1 {
+    border: 1px solid red;
+    figcaption {
+        font-style: italic;
+    }
+}
