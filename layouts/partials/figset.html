@@ -2,6 +2,7 @@
   figset partial, version of figure with srcsetting.
 
   Version 0.9.4sameheight  28/12/2022
+  // TODO before merging: testing sameheight (and non-sameheight) with a single image, with and without lightbox.
 
   DON'T FORGET!!
   * when using figrow_start partial from another template:
@@ -128,6 +129,8 @@
   {{- $defaultimage := "" -}}
   {{- $defaultwidth := 0  -}}
   {{- $imagelist := slice -}}
+  {{- $imagevw := 0 -}}
+  {{- $imageaspect := 1.0 -}}
   {{- $imagemargincss := "" -}}
   {{- $sizes := "" -}}
   {{- $sizesString := "" -}}  
@@ -218,6 +221,7 @@
       and its width is its height*R'
       (Unless $sameheight, in which case we just take the height of the ideal image.)
     */}}
+    {{/* TODO can we abstract these numbers into classes in the SCSS?  but we need them here for calcs.  */}}
     {{/*       screen width:  1200+ 992+ 768+ 576+ else */}}
     {{ $cutoffs      := slice 1200  992  768  576    0 }}
     {{ $idealWThumb  := slice   10   12   15   25   45 }}
@@ -245,18 +249,23 @@
     {{ $sizestrings := slice }}
     {{ range $i, $w := $idealW }}
       {{ $y := 0 }}
+      {{ $area := 0 }}
+      {{ $width := 0 }}
       {{ if $sameheight }}
+        {{/* Make it the ideal height */}}
         {{ $y = div $w $idealAspect }}
+        {{ $width = mul $y $aspect }}
       {{ else }}
-        {{ $area := int (math.Round (div (mul $w $w) $idealAspect)) }}
+        {{/* Keep the area the same */}}
+        {{ $area = div (mul $w $w) $idealAspect }}
         {{ $y = math.Sqrt (div $area $aspect) }}
+        {{ $width = mul $y $aspect }}
       {{ end }}
-      {{/* ?? if $debug }}{{ warnf "figset:  image=%v  area=%v y=%v $aspect=%v pya=%v mrm=%v m100m=%v inthat=%v\n" $image $area $y $aspect (mul $y $aspect)  (math.Round (mul $y $aspect)) (math.Min 100 (math.Round (mul $y $aspect)))  (int (math.Min 100 (math.Round (mul $y $aspect)))) }}{{ end */}}
-      {{ $width := (int (math.Min 100 (math.Round (mul $y $aspect)))) }}
+      {{/* $width = int (math.Min (math.Round $width) 100) */}}
       {{ if eq (index $cutoffs $i) 0 }}
-        {{ $sizestrings = $sizestrings | append (printf "%dvw" $width) }}
+        {{ $sizestrings = $sizestrings | append (printf "%.3fvw" $width) }}
       {{ else }}
-        {{ $sizestrings = $sizestrings | append (printf "(min-width: %dpx) %dvw" (index $cutoffs $i) $width) }}
+        {{ $sizestrings = $sizestrings | append (printf "(min-width: %dpx) %.3fvw" (index $cutoffs $i) $width) }}
       {{ end }}
     {{ end }}
     {{ if $debug }}{{ warnf "figset: image=%v .size=%v $size=%v idealW=%v\n" $image .size $size $idealW }}{{ end }}
@@ -290,47 +299,6 @@
     {{- end -}}
     {{ if $debug }}{{ warnf "figset: imagelist %v" $imagelist }}{{ end }}
 
-
-{{/*
-  {{* height-limited row needs a lot of work -- e.g. non-px suffixes *}}
-
-  {{- if $height -}}
-
-    {{* We can only handle pixels as units -- either "123px" or "123" *}}
-    {{- $heightunit = "px" -}}{{* default if no (or unknown) units *}}
-    {{- if strings.HasSuffix $height "px" -}}
-      {{- $heightval = int (strings.TrimSuffix "px" $height) -}}
-    {{* $heightunit is never used!
-    {{- else if strings.HasSuffix $height "vh" -}}
-      {{- $heightval = int (strings.TrimSuffix "vh" $height) -}}
-      {{- $heightunit = "vh" -}}
-    *}}
-    {{- else -}}
-      {{- $heightval = int $height -}}{{* FIXME this will give an error with any unknown suffix *}}
-    {{- end -}}
-    {{- if gt $heightval $origheight -}}
-      {{* don't want to expand image, so give it a top/bottom margin *}}
-      {{- $imagemargincss = printf "margin: %fpx 0;" (div (sub $heightval $origheight) 2.0) -}}
-      {{- $defaultimage = $image -}}
-    {{- else -}}
-      {{* resize to the exact size required *}}
-      {{* See [image] section of config.toml for image processing options *}}
-      {{- $newimage := $image.Resize (printf "x%d jpg" (int $heightval)) -}}
-      {{- if $debug -}}
-        {{- $newimage = $newimage.Filter (images.Text (printf "resized x%d jpg" (int $heightval)) (dict "color" "#0000ff" "size" 20 "linespacing" 2 "x" 10 "y" 10)) -}}
-      {{- end -}}
-      {{- $defaultimage = $newimage -}}
-    {{- end -}}
-    {{- $defaultwidth = $defaultimage.Width -}}
-    {{- if $size -}}
-      {{- warnf "figset: size ignored when height given for image '%v'" $image -}}
-    {{- end -}}
-
-  {{- else -}}{{* starting with size/width, so more complicated... *}}
-
-  {{- end -}}{{* else, not $height *}}
-*/}}
-
   {{/* Create srcset entries as an array */}}
   {{- $srcset := slice -}}
   {{- range $i := $imagelist -}}
@@ -338,7 +306,7 @@
       {{/* Temp hack to see how missing image is handled */}}
       {{- $srcset = $srcset | append (printf "%sx %dw" $i.RelPermalink $i.Width) -}}
     {{ else }}
-      {{/* Add ?w=<width> to image URL to help lightboxSSA work out it's true width */}}
+      {{/* Add ?w=<width> to image URL to help lightboxSSA work out its true width */}}
       {{- $srcset = $srcset | append (printf "%s?w=%d %dw" $i.RelPermalink $i.Width $i.Width) -}}
     {{end}}
   {{- end -}}
@@ -347,7 +315,7 @@
   {{- if gt (len $imagelist) 1 -}}
     {{- $srcsetString = (delimit $srcset ", ") -}}
   {{- end -}}
-    {{- if $debug }}{{ warnf "figset: imagelist=\"%v\"  srcset=%v  srcsetString=\"%s\"" $imagelist $srcset $srcsetString }}{{ end -}}
+  {{- if $debug }}{{ warnf "figset: imagelist=\"%v\"  srcset=%v  srcsetString=\"%s\"" $imagelist $srcset $srcsetString }}{{ end -}}
 
   {{- $lightboxstring := "" -}}
   {{- if $gallery -}}

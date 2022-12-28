@@ -5,7 +5,7 @@ menu: main
 
 ## Height
 
-{{<figrow debug=false id=figrow1 class="figrowclass1" figsetclass="figsetclass1" gallery=test1 justify=evenly caption="sdlfkj lk jkj lskdfj lsdkfj sldkfj lskdjf" sameheight=true size=thumbnail align=baseline >}}
+{{<figrow debug=false id=figrow1 class="figrowclass1" figsetclass="figsetclass1" gallery=test1 justify=evenly caption="sdlfkj lk jkj lskdfj lsdkfj sldkfj lskdjf" sameheight=true size=small align=baseline >}}
 {{<figset name="FordingbridgeClockTower.jpg" >}}
 {{<figset name="P1130500.JPG" >}}
 {{<figset name="P1130501.JPG" xsize=small >}}
