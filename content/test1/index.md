@@ -29,15 +29,15 @@ Blurb before row of five.
 Blurb before three figsets not in a figrow:
 
 {{<figset name="big image with spaces.jpg" debug=false size=small url=self selfsize=750 caption="url=self750" position=l >}}
-{{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small height=100 caption="height=100 lb=true" lightbox=true position=c >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small height=200 url=self caption="url=self height=200" position=r clear=both >}}
+{{<figset name="img20220824_105444_DRO-800.jpg" debug=false size=small caption="lb=true" lightbox=true position=c >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" debug=false size=small url=self caption="url=self" position=r clear=both >}}
 
 Blurb between row of three and single figset. On left with wrapped text.
 
 {{<figset debug=false name="image with spaces.jpg" >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
 {{<figset name="img20220826_105417_DRO-800.jpg" position=l size=small >}}
-  {{<figset name="notfound-800.jpg" xsize=small >}}
+  {{<figset name="notfound-800.jpg" size=small >}}
 
 So shaken as we are...
 So shaken as we are...
@@ -72,21 +72,13 @@ So shaken as we are...
 
 Blurb after figset, before head2.
 
-## Height in a row
+## Same height, different sizes
 
-{{<figrow gallery=test2 justify=space-around height="120" align=start size=thumbnail caption="So shaken as we are, so wan with care..." >}}
-{{<figset name="big image with spaces.jpg" size=small >}}
+{{<figrow gallery=test2 justify=space-around sameheight=true align=start size=thumbnail caption="row: sh=true size=t" >}}
+{{<figset name="big image with spaces.jpg" size=small caption="size=small" >}}
 {{<figset name="img20220824_105444_DRO-800.jpg"  >}}
 {{<figset debug=false name="image with spaces.jpg" >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="big image with spaces.jpg" size=small >}}
-{{<figset name="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset name="image with spaces.jpg" >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
-{{<figset name="big image with spaces.jpg" size=small >}}
-{{<figset name="img20220824_105444_DRO-800.jpg"  >}}
-{{<figset name="image with spaces.jpg" >}}
-{{<figset name="img20220826_105417_DRO-800.jpg" size=small >}}
+{{<figset name="img20220826_105417_DRO-800.jpg" size=small caption="size=small" >}}
 {{</figrow>}}  
 
 
